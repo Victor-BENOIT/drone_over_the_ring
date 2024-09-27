@@ -24,3 +24,4 @@ Caméra :
   EIS: Oui
   Taille Capteur : 1/5" CMOS
   Taille pixel : 5,08mm
+  Focale : 1.98 mm
