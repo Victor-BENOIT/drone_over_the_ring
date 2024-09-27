@@ -1,0 +1,26 @@
+DJI TELLO 
+
+Appareil :
+  Poids : 80 g environ (avec batterie et hélices)
+  Dimensions : 98 x 92.5 x 41 mm
+  Hélices: 3 pouces
+  Fonctions intégrées: Étecteurs, baromètre, LED, système optique, Wi-Fi 2,4 GHz 802.11n, Aperçu en direct 720p
+  Port: Port de charge Micro USB
+
+Performances de vol :
+      Distance de vol max.: 100 m
+      Vitesse max.: 8 m/s
+      Temps de vol max.: 13 min
+      Altitude de vol max.: 30 m
+
+Batterie :
+  Batterie détachable: 1,1 Ah / 3,8 V
+
+Caméra :
+  Photo : 5 MP (2592 x 1936)
+  FOV: 82,6°
+  Vidéo: HD 720p30
+  Format: JPG (Photo); MP4 (Vidéo)
+  EIS: Oui
+  Taille Capteur : 1/5" CMOS
+  Taille pixel : 5,08mm
