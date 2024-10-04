@@ -49,8 +49,13 @@ def on_press(key):
     except AttributeError:
         pass  # Ignore les autres touches
 
+# Variable globale pour stocker les dernières coordonnées du visage
+last_face_coords = "N/A"
+
 # Fonction pour afficher la vidéo, détecter les visages et le niveau de batterie dans la fenêtre Pygame
 def update_frame():
+    global last_face_coords  # Permet de modifier la variable globale
+
     try:
         frame = tello.get_frame_read().frame  # Lecture de la frame du drone
         if frame is None:
@@ -63,13 +68,15 @@ def update_frame():
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=3)
 
-        # Dessiner des rectangles autour des visages détectés
-        for (x, y, w, h) in faces:
+        # Vérifie s'il y a des visages détectés
+        if len(faces) > 0:
+            # Met à jour les dernières coordonnées des visages détectés
+            (x, y, w, h) = faces[0]  # Prend les coordonnées du premier visage
+            last_face_coords = f"x: {x}, y: {y}, w: {w}, h: {h}"
+            # Dessiner un rectangle autour du visage détecté
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-
-        # Calcul des FPS
-        fps = cv2.getTickFrequency() / (cv2.getTickCount() - tickmark)
-        cv2.putText(frame, "FPS: {:05.2f}".format(fps), (10, 30), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 0), 2)
+        else:
+            last_face_coords = "Aucun visage détecté"
 
         # Rotation et affichage sur Pygame
         frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
@@ -80,6 +87,11 @@ def update_frame():
         pygame.draw.rect(screen, (0, 0, 0), (795, 15, 155, 50))
         battery_text = font.render(f"Batterie: {battery_level}%", True, (255, 255, 255))
         screen.blit(battery_text, (800, 20))  # Position en haut à droite
+
+        # Affichage des dernières coordonnées du visage en haut à gauche
+        pygame.draw.rect(screen, (0, 0, 0), (5, 5, 300, 50))  # Fond noir pour le texte
+        face_text = font.render(last_face_coords, True, (255, 255, 255))
+        screen.blit(face_text, (10, 10))  # Position en haut à gauche
 
         pygame.display.update()  # Met à jour l'affichage
     except Exception as e:
