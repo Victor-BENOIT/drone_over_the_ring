@@ -22,6 +22,7 @@ Caméra :
   Vidéo: HD 720p30
   Format: JPG (Photo); MP4 (Vidéo)
   EIS: Oui
-  Taille Capteur : 1/5" CMOS / 1:1 / 5,08mm
+  Taille Capteur : 1/5" CMOS
+  Taille pixel : 5,08µm
   Distance focale équivalente : 24,63mm (équivalente à 35mm)
   Distance focale réelle : 1,98mm
