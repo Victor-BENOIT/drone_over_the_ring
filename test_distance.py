@@ -42,10 +42,14 @@ def on_press(key):
             tello.move_back(DRONE_MOVE)
         elif key.char == 'd':  # Droite
             tello.move_right(DRONE_MOVE)
-        elif key.char == 'a':  # S'élever
+        elif key.char == 't':  # S'élever
             tello.move_up(DRONE_MOVE)
-        elif key.char == 'e':  # Descendre
+        elif key.char == 'g':  # Descendre
             tello.move_down(DRONE_MOVE)
+        elif key.char == 'a':  # tourner gauche
+            tello.rotate_counter_clockwise(45)
+        elif key.char == 'e':  # tourner droite
+            tello.rotate_clockwise(45)
         elif key.char == 'o':  # Décollage ou atterrissage
             if not tello.is_flying:
                 tello.takeoff()
@@ -66,16 +70,15 @@ def update_frame():
             return
 
         # Appliquer un flip gauche-droite (miroir horizontal)
-        frame = cv2.flip(frame, 1)  # 1 signifie flip horizontal
+        #frame = cv2.flip(frame, 1)  # 1 signifie flip horizontal
 
-        tickmark = cv2.getTickCount()  # Pour mesurer les FPS
+        #tickmark = cv2.getTickCount()  # Pour mesurer les FPS
 
         # Détection des visages
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=3)
 
         # Dessiner des rectangles autour des visages détectés et calculer la distance
-        total_distance = 0  # Pour calculer la distance moyenne
         face_count = len(faces)  # Compte le nombre de visages détectés
 
         for (x, y, w, h) in faces:
@@ -88,22 +91,17 @@ def update_frame():
 
             # Calcul de la distance entre la caméra et le visage
             distance = FOCALE * (1 / grandissement + 2 + grandissement)  # Formule du grandissement
-            distance_cm = distance * 100  # Conversion en centimètres
+            distance_cm = int(distance * 100)  # Conversion en centimètres
 
             # Affichage de la distance sur le visage détecté
-            cv2.putText(frame, f"Distance: {distance_cm:.1f} cm", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-            
-            # Accumule la distance pour calculer la distance moyenne
-            total_distance += distance_cm
+            #cv2.putText(frame, f"Distance: {distance_cm:.1f} cm", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
-        # Afficher la distance moyenne si des visages sont détectés
-        if face_count > 0:
-            average_distance = total_distance / face_count
-            cv2.putText(frame, f"Distance Moyenne: {average_distance:.1f} cm", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-
+        if face_count == 1 and distance_cm > 100:
+            tello.move_forward(DRONE_MOVE)
+        
         # Calcul des FPS
-        fps = cv2.getTickFrequency() / (cv2.getTickCount() - tickmark)
-        cv2.putText(frame, "FPS: {:05.2f}".format(fps), (10, 30), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 0), 2)
+        #fps = cv2.getTickFrequency() / (cv2.getTickCount() - tickmark)
+        #cv2.putText(frame, "FPS: {:05.2f}".format(fps), (10, 30), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 0), 2)
 
         # Rotation et affichage sur Pygame
         frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
@@ -114,6 +112,11 @@ def update_frame():
         pygame.draw.rect(screen, (0, 0, 0), (795, 15, 155, 50))
         battery_text = font.render(f"Batterie: {battery_level}%", True, (255, 255, 255))
         screen.blit(battery_text, (800, 20))  # Position en haut à droite
+        
+        # Affichage de la distance
+        pygame.draw.rect(screen, (0, 0, 0), (20, 15, 170, 50))
+        battery_text = font.render(f"Distance: {distance_cm}cm", True, (255, 255, 255))
+        screen.blit(battery_text, (25, 20))  # Position en haut à droite
 
         pygame.display.update()  # Met à jour l'affichage
     except Exception as e:
