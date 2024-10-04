@@ -2,9 +2,11 @@ from djitellopy import Tello
 from pynput import keyboard
 import pygame
 import cv2
-import numpy as np
 import threading
 import time
+
+# Initialisation du cascade de détection de visage
+face_cascade = cv2.CascadeClassifier("detect_profil.xml")
 
 DRONE_SPEED = 100  # 10-100
 DRONE_MOVE = 20  # 20-500
@@ -13,7 +15,6 @@ DRONE_MOVE = 20  # 20-500
 tello = Tello()
 tello.connect()
 tello.streamon()  # Active le flux vidéo
-
 tello.set_speed(DRONE_SPEED)
 
 # Initialisation de Pygame
@@ -24,13 +25,6 @@ font = pygame.font.SysFont("Arial", 30)  # Police pour l'affichage de la batteri
 
 # Variable globale pour stocker le niveau de batterie
 battery_level = "N/A"
-
-# Fonction pour calculer la distance des objets détectés
-def calculer_distance(diameters, focale=1.75e-3, taille_pix=1.56e-6, diametre_objet_m=7.3e-2):
-    diametre_image_m = diameters * taille_pix
-    grandissement = diametre_image_m / diametre_objet_m
-    distance = focale * (1/grandissement + 2 + grandissement)
-    return distance * 100  # en cm
 
 # Fonction pour contrôler le drone avec le clavier
 def on_press(key):
@@ -55,54 +49,50 @@ def on_press(key):
     except AttributeError:
         pass  # Ignore les autres touches
 
+# Fonction pour afficher la vidéo, détecter les visages et le niveau de batterie dans la fenêtre Pygame
 def update_frame():
-    frame = tello.get_frame_read().frame  # Lecture de la frame du drone
-    frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)  # Rotation de 90 degrés vers la droite
-    
-    # Traitement de l'image (conversion en niveaux de gris, binarisation adaptative)
-    image_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    image_bin = cv2.adaptiveThreshold(image_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    try:
+        frame = tello.get_frame_read().frame  # Lecture de la frame du drone
+        if frame is None:
+            print("Erreur : Impossible de récupérer le flux vidéo.")
+            return
 
-    # Filtrage morphologique (avec des éléments structurants plus grands)
-    elem_struct1 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))  # Plus grand élément structurant
-    elem_struct2 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))  # Plus grand élément structurant
-    image_dilat = cv2.dilate(image_bin, elem_struct1)
-    image_filtered = cv2.erode(image_dilat, elem_struct2)
+        tickmark = cv2.getTickCount()  # Pour mesurer les FPS
 
-    # Labelisation et détection des objets
-    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(image_filtered, connectivity=8)
+        # Détection des visages
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=3)
 
-    # Dessiner les objets détectés et calculer les distances
-    for i in range(1, num_labels):
-        x, y, w, h, area = stats[i]
-        if area > 200:  # Augmenter le seuil pour filtrer les petits objets
-            diameters = np.mean([w, h])  # Approximation du diamètre
-            distance_cm = calculer_distance(diameters)
+        # Dessiner des rectangles autour des visages détectés
+        for (x, y, w, h) in faces:
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
-            # Dessiner des cercles autour des objets détectés
-            center = (int(centroids[i][0]), int(centroids[i][1]))
-            radius = int(diameters / 2)
-            cv2.circle(frame, center, radius, (0, 255, 0), 2)
+        # Calcul des FPS
+        fps = cv2.getTickFrequency() / (cv2.getTickCount() - tickmark)
+        cv2.putText(frame, "FPS: {:05.2f}".format(fps), (10, 30), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 0), 2)
 
-            # Afficher la distance en cm
-            cv2.putText(frame, f'{distance_cm:.1f} cm', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        # Rotation et affichage sur Pygame
+        frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        frame = pygame.surfarray.make_surface(frame)  # Conversion en surface Pygame
+        screen.blit(frame, (0, 0))  # Affiche la frame sur la fenêtre Pygame
 
-    # Conversion de la frame en surface Pygame
-    frame = pygame.surfarray.make_surface(frame)
-    screen.blit(frame, (0, 0))  # Affiche la frame sur la fenêtre Pygame
+        # Affichage du niveau de batterie en haut à droite
+        pygame.draw.rect(screen, (0, 0, 0), (795, 15, 155, 50))
+        battery_text = font.render(f"Batterie: {battery_level}%", True, (255, 255, 255))
+        screen.blit(battery_text, (800, 20))  # Position en haut à droite
 
-    # Affichage du niveau de batterie en haut à droite
-    pygame.draw.rect(screen, (0, 0, 0), (795, 15, 155, 50))
-    battery_text = font.render(f"Batterie: {battery_level}%", True, (255, 255, 255))
-    screen.blit(battery_text, (800, 20))  # Position en haut à droite
-
-    pygame.display.update()  # Met à jour l'affichage
+        pygame.display.update()  # Met à jour l'affichage
+    except Exception as e:
+        print(f"Erreur lors de la capture vidéo: {e}")
 
 # Fonction pour mettre à jour le niveau de batterie toutes les 10 secondes
 def update_battery():
     global battery_level
     while True:
-        battery_level = tello.get_battery()  # Récupère le niveau de batterie
+        try:
+            battery_level = tello.get_battery()  # Récupère le niveau de batterie
+        except Exception as e:
+            print(f"Erreur lors de la récupération de la batterie: {e}")
         time.sleep(10)  # Attendre 10 secondes avant de rafraîchir
 
 # Lancement de l'écouteur de clavier et de l'affichage
@@ -120,10 +110,12 @@ def start_drone_control():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Fermer la fenêtre Pygame
                     running = False
-            update_frame()  # Met à jour l'affichage vidéo, détection et batterie
+            update_frame()  # Met à jour l'affichage vidéo et batterie
         listener.stop()
 
 if __name__ == "__main__":
-    start_drone_control()
-    tello.streamoff()  # Désactive le flux vidéo
-    pygame.quit()  # Quitte Pygame proprement
+    try:
+        start_drone_control()
+    finally:
+        tello.streamoff()  # Désactive le flux vidéo
+        pygame.quit()  # Quitte Pygame proprement
