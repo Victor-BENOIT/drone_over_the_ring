@@ -16,6 +16,20 @@ HAUTEUR_REELLE_VISAGE = 26e-2  # Hauteur réelle moyenne d'un visage en mètres
 DRONE_SPEED = 100  # 10-100
 DRONE_MOVE = 20  # 20-500
 
+# Taille Ecran Pygame
+SCREEN_WIDTH = 960
+SCREEN_HEIGHT = 720
+
+# Fenetre de ciblage
+WINDOW_COEF = 0.1 # 0-1
+#WINDOW_WIDTH = SCREEN_WIDTH * WINDOW_COEF
+WINDOW_HEIGHT = SCREEN_HEIGHT * WINDOW_COEF
+WINDOW_WIDTH = WINDOW_HEIGHT
+WINDOW_CORNER_TOP_LEFT_X = SCREEN_WIDTH / 2 - WINDOW_WIDTH /2
+WINDOW_CORNER_TOP_LEFT_Y = SCREEN_HEIGHT / 2 - WINDOW_HEIGHT / 2
+WINDOW_CORNER_BOTTOM_RIGHT_X = WINDOW_CORNER_TOP_LEFT_X + WINDOW_WIDTH
+WINDOW_CORNER_BOTTOM_RIGHT__Y = WINDOW_CORNER_TOP_LEFT_Y + WINDOW_HEIGHT
+
 
 # Initialisation du drone
 tello = Tello()
@@ -25,7 +39,7 @@ tello.set_speed(DRONE_SPEED)
 
 # Initialisation de Pygame
 pygame.init()
-screen = pygame.display.set_mode((960, 720))  # Taille de la fenêtre Pygame
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))  # Taille de la fenêtre Pygame
 pygame.display.set_caption("Tello Drone POV")
 font = pygame.font.SysFont("Arial", 30)  # Police pour l'affichage de la batterie
 
@@ -57,9 +71,6 @@ def on_press(key):
 
 # Fonction pour afficher la vidéo, détecter les visages et le niveau de batterie dans la fenêtre Pygame
 def update_frame():
-    global distance_cm  # Ajout de cette ligne pour utiliser la variable distance_cm
-    distance_cm = 0  # Initialise la distance
-
     try:
         frame = tello.get_frame_read().frame  # Lecture de la frame du drone
         if frame is None:
@@ -77,34 +88,45 @@ def update_frame():
         face_count = len(faces)  # Compte le nombre de visages détectés
 
         for (x, y, w, h) in faces:
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-            # Calcul du grandissement à partir de la hauteur du visage détecté
-            hauteur_image_pix = h  # Hauteur en pixels du visage dans l'image
-            hauteur_image_m = hauteur_image_pix * TAILLE_PIX  # Conversion en mètres
-            grandissement = hauteur_image_m / HAUTEUR_REELLE_VISAGE
+        if face_count == 1:
+            (x, y, w, h) = faces[0]
+            x_center_box = x + h / 2
+            y_center_box = y + h / 2
 
-            # Calcul de la distance entre la caméra et le visage
-            distance = FOCALE * (1 / grandissement + 2 + grandissement)  # Formule du grandissement
-            distance_cm = int(distance * 100)  # Conversion en centimètres
+            # Récupérer les coordonnées de la fenêtre de ciblage
+            min_x_window = WINDOW_CORNER_TOP_LEFT_X
+            max_x_window = WINDOW_CORNER_BOTTOM_RIGHT_X
+            min_y_window = WINDOW_CORNER_TOP_LEFT_Y
+            max_y_window = WINDOW_CORNER_BOTTOM_RIGHT__Y
 
-            # Affichage de la distance sur le visage détecté
-            #cv2.putText(frame, f"Distance: {distance_cm:.1f} cm", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-            
+                # Vérifier les conditions et ajuster la position du drone
+            if y_center_box < min_y_window:  # Le visage est en dessous de la fenêtre
+                tello.move_up(DRONE_MOVE)  # Le drone monte
+            elif y_center_box > max_y_window:  # Le visage est au-dessus de la fenêtre
+                tello.move_down(DRONE_MOVE)  # Le drone descend
+
+            if x_center_box < min_x_window:  # Le visage est à gauche de la fenêtre
+                tello.move_right(DRONE_MOVE)  # Le drone se décale à droite
+            elif x_center_box > max_x_window:  # Le visage est à droite de la fenêtre
+                tello.move_left(DRONE_MOVE)  # Le drone se décale à gauche
+
+
         # Rotation et affichage sur Pygame
         frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
         frame = pygame.surfarray.make_surface(frame)  # Conversion en surface Pygame
         screen.blit(frame, (0, 0))  # Affiche la frame sur la fenêtre Pygame
+
+
+        # Affichage de la fenetre de ciblage
+        pygame.draw.rect(screen, (255, 0, 0), (WINDOW_CORNER_TOP_LEFT_X, WINDOW_CORNER_TOP_LEFT_Y, WINDOW_WIDTH, WINDOW_HEIGHT), 5)
 
         # Affichage du niveau de batterie en haut à droite
         pygame.draw.rect(screen, (0, 0, 0), (795, 15, 155, 50))
         battery_text = font.render(f"Batterie: {battery_level}%", True, (255, 255, 255))
         screen.blit(battery_text, (800, 20))  # Position en haut à droite
 
-        # Affichage de la distance
-        pygame.draw.rect(screen, (0, 0, 0), (20, 15, 170, 50))
-        distance_text = font.render(f"Distance: {distance_cm}cm", True, (255, 255, 255))
-        screen.blit(distance_text, (25, 20))
         pygame.display.update()
 
     except Exception as e:
