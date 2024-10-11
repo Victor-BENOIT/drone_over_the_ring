@@ -6,7 +6,7 @@ from djitellopy import Tello
 from pynput import keyboard
 
 # Initialisation du cascade de détection de visage
-face_cascade = cv2.CascadeClassifier("C:\\Users\\fleur\\OneDrive - ESEO\\Bureau\\Ecole\\E5\\PI\\Repositery GitHub\\drone_over_the_ring\\detect_profil.xml")
+face_cascade = cv2.CascadeClassifier("detect_profil.xml")
 
 # Paramètres pour la distance
 FOCALE = 1.98e-3  # Focale en mètres
