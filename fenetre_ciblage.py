@@ -6,7 +6,8 @@ from djitellopy import Tello
 from pynput import keyboard
 
 # Initialisation du cascade de détection de visage
-face_cascade = cv2.CascadeClassifier("detect_profil.xml")
+face_cascade = cv2.CascadeClassifier("C:\\Users\\user\\Desktop\\user\\e5e\\pi\\Repositery GitHub\\drone_over_the_ring\\detect_profil.xml")
+
 
 # Paramètres pour la distance
 FOCALE = 1.98e-3  # Focale en mètres
@@ -14,7 +15,7 @@ TAILLE_PIX = 5.08e-6  # Taille d'un pixel en mètres
 HAUTEUR_REELLE_VISAGE = 26e-2  # Hauteur réelle moyenne d'un visage en mètres
 
 DRONE_SPEED = 100  # 10-100
-DRONE_MOVE = 20  # 20-500
+DRONE_DIST = 20  # 20-500
 
 # Taille Ecran Pygame
 SCREEN_WIDTH = 960
@@ -25,10 +26,9 @@ WINDOW_COEF = 0.1 # 0-1
 #WINDOW_WIDTH = SCREEN_WIDTH * WINDOW_COEF
 WINDOW_HEIGHT = SCREEN_HEIGHT * WINDOW_COEF
 WINDOW_WIDTH = WINDOW_HEIGHT
-WINDOW_CORNER_TOP_LEFT_X = SCREEN_WIDTH / 2 - WINDOW_WIDTH /2
-WINDOW_CORNER_TOP_LEFT_Y = SCREEN_HEIGHT / 2 - WINDOW_HEIGHT / 2
-WINDOW_CORNER_BOTTOM_RIGHT_X = WINDOW_CORNER_TOP_LEFT_X + WINDOW_WIDTH
-WINDOW_CORNER_BOTTOM_RIGHT__Y = WINDOW_CORNER_TOP_LEFT_Y + WINDOW_HEIGHT
+WINDOW_CORNER_X = SCREEN_WIDTH / 2 - WINDOW_WIDTH /2
+WINDOW_CORNER_Y = SCREEN_HEIGHT / 2 - WINDOW_HEIGHT / 2
+
 
 
 # Initialisation du drone
@@ -50,17 +50,17 @@ battery_level = "N/A"
 def on_press(key):
     try:
         if key.char == 'z':  # Avancer
-            tello.move_forward(DRONE_MOVE)
+            tello.move_forward(DRONE_DIST)
         elif key.char == 'q':  # Gauche
-            tello.move_left(DRONE_MOVE)
+            tello.move_left(DRONE_DIST)
         elif key.char == 's':  # Reculer
-            tello.move_back(DRONE_MOVE)
+            tello.move_back(DRONE_DIST)
         elif key.char == 'd':  # Droite
-            tello.move_right(DRONE_MOVE)
+            tello.move_right(DRONE_DIST)
         elif key.char == 'a':  # S'élever
-            tello.move_up(DRONE_MOVE)
+            tello.move_up(DRONE_DIST)
         elif key.char == 'e':  # Descendre
-            tello.move_down(DRONE_MOVE)
+            tello.move_down(DRONE_DIST)
         elif key.char == 'o':  # Décollage ou atterrissage
             if not tello.is_flying:
                 tello.takeoff()
@@ -92,25 +92,25 @@ def update_frame():
 
         if face_count == 1:
             (x, y, w, h) = faces[0]
-            x_center_box = x + h / 2
+            x_center_box = x + w / 2
             y_center_box = y + h / 2
 
             # Récupérer les coordonnées de la fenêtre de ciblage
-            min_x_window = WINDOW_CORNER_TOP_LEFT_X
-            max_x_window = WINDOW_CORNER_BOTTOM_RIGHT_X
-            min_y_window = WINDOW_CORNER_TOP_LEFT_Y
-            max_y_window = WINDOW_CORNER_BOTTOM_RIGHT__Y
+            min_x_window = WINDOW_CORNER_X
+            max_x_window = WINDOW_CORNER_X + WINDOW_WIDTH
+            min_y_window = WINDOW_CORNER_Y
+            max_y_window = WINDOW_CORNER_Y + WINDOW_HEIGHT
 
                 # Vérifier les conditions et ajuster la position du drone
             if y_center_box < min_y_window:  # Le visage est en dessous de la fenêtre
-                tello.move_up(DRONE_MOVE)  # Le drone monte
+                tello.move_up(DRONE_DIST)  # Le drone monte
             elif y_center_box > max_y_window:  # Le visage est au-dessus de la fenêtre
-                tello.move_down(DRONE_MOVE)  # Le drone descend
+                tello.move_down(DRONE_DIST)  # Le drone descend
 
             if x_center_box < min_x_window:  # Le visage est à gauche de la fenêtre
-                tello.move_right(DRONE_MOVE)  # Le drone se décale à droite
+                tello.move_right(DRONE_DIST)  # Le drone se décale à droite
             elif x_center_box > max_x_window:  # Le visage est à droite de la fenêtre
-                tello.move_left(DRONE_MOVE)  # Le drone se décale à gauche
+                tello.move_left(DRONE_DIST)  # Le drone se décale à gauche
 
 
         # Rotation et affichage sur Pygame
@@ -120,7 +120,7 @@ def update_frame():
 
 
         # Affichage de la fenetre de ciblage
-        pygame.draw.rect(screen, (255, 0, 0), (WINDOW_CORNER_TOP_LEFT_X, WINDOW_CORNER_TOP_LEFT_Y, WINDOW_WIDTH, WINDOW_HEIGHT), 5)
+        pygame.draw.rect(screen, (255, 0, 0), (WINDOW_CORNER_X, WINDOW_CORNER_Y, WINDOW_WIDTH, WINDOW_HEIGHT), 5)
 
         # Affichage du niveau de batterie en haut à droite
         pygame.draw.rect(screen, (0, 0, 0), (795, 15, 155, 50))
