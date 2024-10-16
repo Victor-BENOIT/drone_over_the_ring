@@ -19,6 +19,15 @@ class PygameDisplay:
         battery_text = self.font.render(f"Batterie: {battery}%", True, (255, 255, 255))
         self.screen.blit(battery_text, (800, 20))  # Position top right
         pygame.display.update()
+    
+    def display_distance(self, distance):
+        pygame.draw.rect(self.screen, (0, 0, 0), (15, 15, 180, 50))
+        if distance == None:
+            distance_text = self.font.render(f"Distance: {distance}", True, (255, 255, 255))
+        else:
+            distance_text = self.font.render(f"Distance: {distance}cm", True, (255, 255, 255))
+        self.screen.blit(distance_text, (20, 20))  # Position top left
+        pygame.display.update()
 
     def display_target(self, target):
         pygame.draw.rect(self.screen, (255, 0, 0), target, 5)
