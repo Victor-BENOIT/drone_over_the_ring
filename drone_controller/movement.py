@@ -7,7 +7,7 @@ class Movement:
     def move_forward(self):
         self.tello.move_forward(DRONE_DIST)
 
-    def move_back(self):
+    def move_backward(self):
         self.tello.move_back(DRONE_DIST)
 
     def move_left(self):

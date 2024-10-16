@@ -16,7 +16,7 @@ HAUTEUR_REELLE_VISAGE = 26e-2  # Hauteur réelle moyenne d'un visage en mètres
 #                         Paramètres de déplacement
 #############################################################################################
 DRONE_SPEED = 100  # 10-100cm
-DRONE_DIST = 20  # 20-500cm
+DRONE_DIST = 30  # 20-500cm
 MANUAL_MODE = False
 AUTONOMOUS_MODE = not MANUAL_MODE
 
@@ -33,8 +33,8 @@ SCREEN_TITLE = "Tello Drone POV"
 #############################################################################################
 WINDOW_COEF = 0.1 # 0-1
 
-WINDOW_OFFSET_X =  0
-WINDOW_OFFSET_Y = -200
+WINDOW_OFFSET_X = 0
+WINDOW_OFFSET_Y = 0
 
 square_target = True
 # Largeur et Hauteur de la zone target

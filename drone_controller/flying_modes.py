@@ -12,6 +12,7 @@ class ManualMode:
         self.keyboard.start_listening()
 
     def main_loop(self):
+        print(self.vision.distance)
         return  #Ne fait rien d'automatique en manual mode
 
     def stop(self):
@@ -33,13 +34,14 @@ class AutonomousMode:
             self.controller.movement.move_up()
 
     def main_loop(self):
-        self.tracking() #Execute une instance de tracking
+        self.horizontal_vertical_tracking() #Execute une instance de horizontal_vertical_tracking
+        self.distance_tracking()
 
     def stop(self):
         if self.controller.is_flying():
             self.controller.land()
 
-    def tracking(self):
+    def horizontal_vertical_tracking(self):
         faces = self.vision.get_faces_coordinates(self.controller.get_frame())
         if len(faces) == 1:
             (x, y, w, h) = faces[0]
@@ -64,3 +66,13 @@ class AutonomousMode:
                 self.controller.movement.move_right()
             elif x_center_box > max_x_window:  # Le visage est à droite de la fenêtre
                 self.controller.movement.move_left()
+
+    
+    def distance_tracking(self):
+        distance = self.vision.distance
+        if distance is None:
+            return
+        if distance > 100:
+            self.controller.movement.move_forward()
+        elif distance < 50:
+            self.controller.movement.move_backward()
