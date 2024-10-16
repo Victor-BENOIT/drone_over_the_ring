@@ -16,7 +16,7 @@ HAUTEUR_REELLE_VISAGE = 26e-2  # Hauteur réelle moyenne d'un visage en mètres
 #                         Paramètres de déplacement
 #############################################################################################
 DRONE_SPEED = 100  # 10-100cm
-DRONE_DIST = 50  # 20-500cm
+DRONE_DIST = 20  # 20-500cm
 MANUAL_MODE = False
 AUTONOMOUS_MODE = not MANUAL_MODE
 
