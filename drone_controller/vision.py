@@ -1,9 +1,10 @@
 import cv2
 import pygame
+from config.settings import CHEMIN_DETECT
 
 class Vision:
     def __init__(self):
-        self.face_cascade = cv2.CascadeClassifier('resources/detect_profil.xml')
+        self.face_cascade = cv2.CascadeClassifier(CHEMIN_DETECT)
 
     def process_frame(self, frame, screen):
         faces = self.get_faces_coordinates(frame)

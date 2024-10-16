@@ -1,4 +1,10 @@
 #############################################################################################
+#                         Paramètres de chemin d'accès
+#############################################################################################
+CHEMIN_DETECT = "resources/detect_profil.xml"  # Chemin d'accès au fichier de détection de visage
+
+
+#############################################################################################
 #                         Paramètres pour le calcul de distance
 #############################################################################################
 FOCALE = 1.98e-3  # Focale en mètres
@@ -10,7 +16,7 @@ HAUTEUR_REELLE_VISAGE = 26e-2  # Hauteur réelle moyenne d'un visage en mètres
 #                         Paramètres de déplacement
 #############################################################################################
 DRONE_SPEED = 100  # 10-100cm
-DRONE_DIST = 20  # 20-500cm
+DRONE_DIST = 50  # 20-500cm
 MANUAL_MODE = False
 AUTONOMOUS_MODE = not MANUAL_MODE
 
