@@ -1,12 +1,14 @@
 import cv2
+from ultralytics import YOLO
 import pygame
-from config.settings import CHEMIN_DETECT
+from config.settings import CHEMIN_DETECT, MODEL_HOOP_PATH, THRESHOLD_HOOP
 from config.settings import FOCALE, TAILLE_PIX, HAUTEUR_REELLE_VISAGE
 
 class Vision:
     def __init__(self):
         self.face_cascade = cv2.CascadeClassifier(CHEMIN_DETECT)
         self.distance = None
+        self.modele_hoop =  YOLO(MODEL_HOOP_PATH)
 
     def process_frame(self, frame, screen):
         faces = self.get_faces_coordinates(frame)
@@ -32,3 +34,7 @@ class Vision:
                 self.distance = int(FOCALE * (1 / grandissement + 2 + grandissement) * 100)
         elif len(faces) == 0:
            self.distance = None
+
+
+    def get_hoops(self, frame):
+        return
