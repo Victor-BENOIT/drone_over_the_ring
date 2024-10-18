@@ -1,4 +1,5 @@
 from drone_controller.keyboard_control import Keyboard
+from config.settings import TARGET_DIST, DEAD_ZONE, MOVE_RATIO
 
 class ManualMode:
     def __init__(self, controller):
@@ -12,6 +13,7 @@ class ManualMode:
         self.keyboard.start_listening()
 
     def main_loop(self):
+        #print(self.vision.distance)
         return  #Ne fait rien d'automatique en manual mode
 
     def stop(self):
@@ -33,17 +35,17 @@ class AutonomousMode:
             self.controller.movement.move_up()
 
     def main_loop(self):
-        self.tracking() #Execute une instance de tracking
+        self.horizontal_vertical_tracking() #Execute une instance de horizontal_vertical_tracking
+        self.distance_tracking()
 
     def stop(self):
         if self.controller.is_flying():
             self.controller.land()
 
-    def tracking(self):
+    def horizontal_vertical_tracking(self):
         faces = self.vision.get_faces_coordinates(self.controller.get_frame())
         if len(faces) == 1:
             (x, y, w, h) = faces[0]
-            # print(x, y, w, h)
             x_center_box = x + w / 2
             y_center_box = y + h / 2
 
@@ -64,3 +66,28 @@ class AutonomousMode:
                 self.controller.movement.move_right()
             elif x_center_box > max_x_window:  # Le visage est à droite de la fenêtre
                 self.controller.movement.move_left()
+
+    
+    def distance_tracking(self):
+        distance = self.vision.distance
+        if distance is None:
+            return
+        
+        distance_to_target = distance - TARGET_DIST
+
+        if distance_to_target > 0:
+            if DEAD_ZONE > distance_to_target > 0:
+                print("Deadzone")
+            elif distance_to_target * MOVE_RATIO < 20:
+                self.controller.movement.move_forward(20)
+            else:
+                self.controller.movement.move_forward(int(distance_to_target * MOVE_RATIO))
+        elif distance_to_target < 0:
+            if -DEAD_ZONE < distance_to_target < 0:
+                print("Deadzone")
+            elif abs(distance_to_target * MOVE_RATIO) < 20:
+                self.controller.movement.move_backward(20)
+            else:
+                self.controller.movement.move_backward(int(abs(distance_to_target * MOVE_RATIO)))
+        else:
+            return

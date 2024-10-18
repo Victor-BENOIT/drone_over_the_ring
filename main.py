@@ -17,6 +17,7 @@ def start_drone_control():
         running = pygame_window.handle_events() #Gère les événements et l'interruption
         drone.vision.process_frame(drone.get_frame(), pygame_window.screen)
         pygame_window.display_target(drone.target.get_target_window())
+        pygame_window.display_distance(drone.vision.distance)
         pygame_window.display_battery(battery_monitoring.battery_level)
         drone.mode.main_loop()
 

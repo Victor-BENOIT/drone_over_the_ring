@@ -12,7 +12,7 @@ class Keyboard:
             elif key.char == 'q':
                 self.controller.movement.move_left()
             elif key.char == 's':
-                self.controller.movement.move_back()
+                self.controller.movement.move_backward()
             elif key.char == 'd':
                 self.controller.movement.move_right()
             elif key.char == 'a':
