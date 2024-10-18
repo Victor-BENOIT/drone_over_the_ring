@@ -12,6 +12,7 @@ class PygameDisplay:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 print("Emergency landing!")
+                pygame.quit()
                 return False
             if event.type == pygame.QUIT:
                 return False  # Indique que la fenêtre doit être fermée
