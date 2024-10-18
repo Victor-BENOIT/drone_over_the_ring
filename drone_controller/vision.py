@@ -37,4 +37,5 @@ class Vision:
 
 
     def get_hoops(self, frame):
+        yo = 1
         return
