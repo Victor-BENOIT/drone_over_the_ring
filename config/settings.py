@@ -2,6 +2,7 @@
 #                         Paramètres de chemin d'accès
 #############################################################################################
 CHEMIN_DETECT = "resources/detect_profil.xml"  # Chemin d'accès au fichier de détection de visage
+MODEL_HOOP_PATH = r'drone_over_the_ring\resources\runs\detect\train9\weights\last.pt'
 
 
 #############################################################################################
@@ -10,6 +11,7 @@ CHEMIN_DETECT = "resources/detect_profil.xml"  # Chemin d'accès au fichier de d
 FOCALE = 1.98e-3  # Focale de la caméra en mètres
 TAILLE_PIX = 5.08e-6  # Taille d'un pixel en mètres
 HAUTEUR_REELLE_VISAGE = 26e-2  # Hauteur réelle d'un visage en mètres
+THRESHOLD_HOOP = 0.9 # Seuil de detection cercle
 
 
 #############################################################################################

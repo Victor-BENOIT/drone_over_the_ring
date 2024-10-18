@@ -29,8 +29,8 @@ tello.connect()
 tello.streamon()
 
 # Chargement des modèles YOLO pour les cercles et les hexagones
-model_hoop_path = r'runs\detect\train9\weights\last.pt'
-model_hexagon_path = r'runs\detect\train5\weights\last.pt'
+model_hoop_path = r'drone_over_the_ring\resources\runs\detect\train9\weights\last.pt'
+model_hexagon_path = r'drone_over_the_ring\resources\runs\detect\train5\weights\last.pt'
 
 model_hoop = YOLO(model_hoop_path)
 model_hexagon = YOLO(model_hexagon_path)
