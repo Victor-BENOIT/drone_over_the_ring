@@ -19,7 +19,7 @@ THRESHOLD_HOOP = 0.9 # Seuil de detection cercle
 #############################################################################################
 DRONE_SPEED = 100  # 10-100 (vitesse de déplacement par défaut)
 DRONE_DIST = 30  # 20-500cm (distance de déplacement par défaut)
-MANUAL_MODE = False # True pour le mode manuel, False pour le mode autonome
+MANUAL_MODE = True # True pour le mode manuel, False pour le mode autonome
 AUTONOMOUS_MODE = not MANUAL_MODE 
 
 
@@ -37,7 +37,7 @@ BATTERY_DISPLAY_HEIGHT = 50 # Hauteur de la zone d'affichage de la batterie
 
 DIST_DISPLAY_X = 15 # Position x du coin haut gauche de la distance
 DIST_DISPLAY_Y = 15 # Position y du coin haut gauche de la distance
-DIST_DISPLAY_WIDTH = 180 # Largeur de la zone d'affichage de la distance
+DIST_DISPLAY_WIDTH = 190 # Largeur de la zone d'affichage de la distance
 DIST_DISPLAY_HEIGHT = 50 # Hauteur de la zone d'affichage de la distance
 
 #############################################################################################
