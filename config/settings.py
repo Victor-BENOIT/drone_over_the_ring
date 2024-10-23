@@ -24,7 +24,7 @@ THRESHOLD_HOOP = 0.9 # Seuil de detection cercle
 #                                       Paramètres de déplacement
 #################################################################################################################
 DRONE_SPEED = 100  # 10-100 (vitesse de déplacement par défaut)
-DRONE_DIST = 30  # 20-500cm (distance de déplacement par défaut)
+DRONE_DIST = 20  # 20-500cm (distance de déplacement par défaut)
 MANUAL_MODE = False # True pour le mode manuel, False pour le mode autonome
 AUTONOMOUS_MODE = not MANUAL_MODE 
 
@@ -49,10 +49,10 @@ DIST_DISPLAY_HEIGHT = 50 # Hauteur de la zone d'affichage de la distance
 #################################################################################################################
 #                                       Paramètres pour le targeting
 #################################################################################################################
-WINDOW_COEF = 0.2 # Coefficient de la taille de la zone target (par rapport à la taille de l'écran)
+WINDOW_COEF = 0.25 # Coefficient de la taille de la zone target (par rapport à la taille de l'écran)
 
 WINDOW_OFFSET_X = 0 # Offset en x de la zone target
-WINDOW_OFFSET_Y = -100 # Offset en y de la zone target -100 // pour aller plus bas / 100 pour aller plus haut
+WINDOW_OFFSET_Y = -150 # Offset en y de la zone target -100 pour aller plus bas / 100 pour aller plus haut
 
 square_target = True
 # Largeur et Hauteur de la zone target
@@ -66,6 +66,6 @@ else :
 WINDOW_CORNER_X = SCREEN_WIDTH / 2 - WINDOW_WIDTH /2 + WINDOW_OFFSET_X #px
 WINDOW_CORNER_Y = SCREEN_HEIGHT / 2 - WINDOW_HEIGHT / 2 + WINDOW_OFFSET_Y #px
 
-TARGET_DIST = 100 # Distance fisée par rapport à la cible en cm
-MOVE_RATIO = 0.8 # [0:1] Ratio de déplacement par rapport à la distance de la cible
+TARGET_DIST = 125 # Distance fisée par rapport à la cible en cm
+MOVE_RATIO = 0.6 # [0:1] Ratio de déplacement par rapport à la distance de la cible
 DEAD_ZONE = 10 # Zone morte pour le déplacement en cm
