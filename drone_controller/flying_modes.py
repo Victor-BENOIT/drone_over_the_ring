@@ -116,3 +116,37 @@ class AutonomousMode:
 
         else:
             return
+
+class ScanMode:
+    def __init__(self, controller):
+        self.controller = controller
+        self.tello = controller.tello
+        self.vision = controller.vision       
+    
+    def start(self):
+        print("Mode Scan activé.")
+        if not self.controller.is_flying():
+            self.controller.takeoff()
+        while self.tello.get_height() < 120:
+            self.controller.movement.move_up()   
+            
+    def rotate_360(self):
+        print("Début de la rotation à 360 degrés")
+        angle = 0
+        increment = 10  # Rotation en incréments de 10 degrés pour plus de stabilité
+
+        while angle < 360:
+            self.tello.rotate_clockwise(increment)
+            angle += increment
+            print(f"Rotation actuelle : {angle}°")
+
+        print("Rotation à 360 degrés terminée")
+    
+    def main_loop(self):
+        self.rotate_360()
+        self.controller.land()
+
+    def stop(self):
+        if self.controller.is_flying():
+            self.controller.land()
+    

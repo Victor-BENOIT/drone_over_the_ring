@@ -25,8 +25,9 @@ THRESHOLD_HOOP = 0.9 # Seuil de detection cercle
 #################################################################################################################
 DRONE_SPEED = 100  # 10-100 (vitesse de déplacement par défaut)
 DRONE_DIST = 20  # 20-500cm (distance de déplacement par défaut)
-MANUAL_MODE = True # True pour le mode manuel, False pour le mode autonome
-AUTONOMOUS_MODE = not MANUAL_MODE 
+MANUAL_MODE = False # True pour le mode manuel, False pour le mode autonome
+AUTONOMOUS_MODE = False 
+SCAN_MODE = True
 
 
 #################################################################################################################
