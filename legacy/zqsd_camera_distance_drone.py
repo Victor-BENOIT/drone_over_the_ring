@@ -6,7 +6,7 @@ import threading
 import time
 
 # Initialisation du cascade de détection de visage
-face_cascade = cv2.CascadeClassifier("detect_profil.xml")
+face_cascade = cv2.CascadeClassifier("drone_over_the_ring/legacy/detect_profil.xml")
 
 DRONE_SPEED = 100  # 10-100
 DRONE_MOVE = 20  # 20-500
