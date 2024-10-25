@@ -33,7 +33,7 @@ class Logging:
         reduced_movements.append((current_direction, current_value))
         self.movements = reduced_movements
 
-    def log_movements(self):
+    def save_logs(self):
         if not LOGGING_ENABLED:
             return
         with open(self.filename, 'w') as file:

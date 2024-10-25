@@ -26,5 +26,6 @@ if __name__ == "__main__":
     try:
         start_drone_control()
     finally:
+        drone.logging.save_logs()
         drone.mode.stop()
         drone.stop_video_stream()
