@@ -14,7 +14,8 @@ class DroneController:
         self.tello.streamon()
 
         self.vision = Vision()
-        self.movement = Movement(self.tello)
+        self.logging = Logging()
+        self.movement = Movement(self)
         self.target = Target()
         if AUTONOMOUS_MODE:
             self.mode = AutonomousMode(self)

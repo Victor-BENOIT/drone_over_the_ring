@@ -5,26 +5,27 @@ from utils.pygame import PygameDisplay
 # Initialisation du drone
 drone = DroneController()
 battery_monitoring = BatteryMonitoring(drone)
-pygame_window = PygameDisplay()
+pygame_window = PygameDisplay(drone, battery_monitoring)
 
 def start_drone_control():
-
     battery_monitoring.start_monitoring()
+    pygame_thread = pygame_window.start_display_thread()
     drone.mode.start()
 
     running = True
     while running:
-        running = pygame_window.handle_events() #Gère les événements et l'interruption
-        drone.vision.process_frame(drone.get_frame(), pygame_window.screen)
-        pygame_window.display_target(drone.target.get_target_window())
-        pygame_window.display_distance(drone.vision.distance)
-        pygame_window.display_battery(battery_monitoring.battery_level)
+        running = pygame_window.handle_events()
+        drone.vision.process_frame(drone.get_frame())
         drone.mode.main_loop()
 
+    pygame_thread.join()
+
     drone.mode.stop()
+
 if __name__ == "__main__":
     try:
         start_drone_control()
     finally:
+        drone.logging.save_logs()
+        drone.mode.stop()
         drone.stop_video_stream()
-        pygame_window.quit()
