@@ -38,12 +38,15 @@ class Vision:
     
 
     def update_distance(self, list):
-        if(len(list) == 1):
+        if len(list) == 1:
             for (x, y, w, h, _) in list:
-                grandissement = h * TAILLE_PIX / HAUTEUR_REELLE_HOOP
-                self.distance = int(FOCALE * (1 / grandissement + 2 + grandissement) * 100)
+            # Calcul du grandissement
+                grandissement = h * TAILLE_PIX
+            
+            # Utilisation de la formule simplifiée
+                self.distance = int((HAUTEUR_REELLE_HOOP * FOCALE) / grandissement * 100)
         elif len(list) == 0:
-           self.distance = None
+            self.distance = None
 
 
     def get_hoops(self, frame):

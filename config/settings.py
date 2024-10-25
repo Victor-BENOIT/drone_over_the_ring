@@ -1,8 +1,8 @@
 #################################################################################################################
 #                                       Paramètres de chemin d'accès
 #################################################################################################################
-CHEMIN_DETECT = "resources/detect_profil.xml"  # Chemin d'accès au fichier de détection de visage
-MODEL_HOOP_PATH = r'resources\runs\detect\train9\weights\last.pt'
+CHEMIN_DETECT = "drone_over_the_ring/resources/detect_profil.xml"  # Chemin d'accès au fichier de détection de visage
+MODEL_HOOP_PATH = r'drone_over_the_ring\resources\runs\detect\train9\weights\last.pt'
 
 
 #################################################################################################################
@@ -11,7 +11,7 @@ MODEL_HOOP_PATH = r'resources\runs\detect\train9\weights\last.pt'
 FOCALE = 1.98e-3  # Focale de la caméra en mètres
 TAILLE_PIX = 5.08e-6  # Taille d'un pixel en mètres
 HAUTEUR_REELLE_VISAGE = 26e-2  # Hauteur réelle d'un visage en mètres
-HAUTEUR_REELLE_HOOP = 0.62 * 2 # Hauteur réelle d'un cercle en mètres // RAPPORT DE CORRECTION DE 2 ARBITRAIRE
+HAUTEUR_REELLE_HOOP = 0.62 * 2.75 # Hauteur réelle d'un cercle en mètres // RAPPORT DE CORRECTION DE 2 ARBITRAIRE
 
 
 #################################################################################################################
@@ -25,7 +25,7 @@ THRESHOLD_HOOP = 0.9 # Seuil de detection cercle
 #################################################################################################################
 DRONE_SPEED = 100  # 10-100 (vitesse de déplacement par défaut)
 DRONE_DIST = 20  # 20-500cm (distance de déplacement par défaut)
-MANUAL_MODE = False # True pour le mode manuel, False pour le mode autonome
+MANUAL_MODE = True # True pour le mode manuel, False pour le mode autonome
 AUTONOMOUS_MODE = not MANUAL_MODE 
 
 
