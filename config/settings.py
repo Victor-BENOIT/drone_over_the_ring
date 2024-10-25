@@ -1,8 +1,8 @@
 #################################################################################################################
 #                                       Paramètres de chemin d'accès
 #################################################################################################################
-CHEMIN_DETECT = "drone_over_the_ring/resources/detect_profil.xml"  # Chemin d'accès au fichier de détection de visage
-MODEL_HOOP_PATH = r'drone_over_the_ring\resources\runs\detect\train9\weights\last.pt'
+CHEMIN_DETECT = "resources/detect_profil.xml"  # Chemin d'accès au fichier de détection de visage
+MODEL_HOOP_PATH = r'resources\runs\detect\train9\weights\last.pt'
 
 
 #################################################################################################################
@@ -11,7 +11,7 @@ MODEL_HOOP_PATH = r'drone_over_the_ring\resources\runs\detect\train9\weights\las
 FOCALE = 1.98e-3  # Focale de la caméra en mètres
 TAILLE_PIX = 5.08e-6  # Taille d'un pixel en mètres
 HAUTEUR_REELLE_VISAGE = 26e-2  # Hauteur réelle d'un visage en mètres
-HAUTEUR_REELLE_HOOP = 0.62 * 2.75 # Hauteur réelle d'un cercle en mètres // RAPPORT DE CORRECTION DE 2 ARBITRAIRE
+HAUTEUR_REELLE_HOOP = 0.62 * 2 # Hauteur réelle d'un cercle en mètres // RAPPORT DE CORRECTION DE 2 ARBITRAIRE
 
 
 #################################################################################################################
@@ -30,7 +30,7 @@ LOGGING_ENABLED = True
 #################################################################################################################
 DRONE_SPEED = 100  # 10-100 (vitesse de déplacement par défaut)
 DRONE_DIST = 20  # 20-500cm (distance de déplacement par défaut)
-MANUAL_MODE = True # True pour le mode manuel, False pour le mode autonome
+MANUAL_MODE = False # True pour le mode manuel, False pour le mode autonome
 AUTONOMOUS_MODE = not MANUAL_MODE 
 
 
@@ -57,7 +57,7 @@ DIST_DISPLAY_HEIGHT = 50 # Hauteur de la zone d'affichage de la distance
 WINDOW_COEF = 0.25 # Coefficient de la taille de la zone target (par rapport à la taille de l'écran)
 
 WINDOW_OFFSET_X = 0 # Offset en x de la zone target
-WINDOW_OFFSET_Y = -150 # Offset en y de la zone target -100 pour aller plus bas / 100 pour aller plus haut
+WINDOW_OFFSET_Y = -200 # Offset en y de la zone target -100 pour aller plus bas / 100 pour aller plus haut
 
 square_target = True
 # Largeur et Hauteur de la zone target

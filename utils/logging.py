@@ -16,26 +16,43 @@ class Logging:
             self.movements.append((direction, value))
         else:
             raise ValueError("Invalid direction. Must be one of 'up', 'down', 'right', 'left', 'forward', 'backward'.")
-
-    def reduce_movements(self):
+        
+    def add_gate_marker(self, gate_type):
         if not LOGGING_ENABLED:
             return
-        
-        reduced_movements = []
-        current_direction, current_value = self.movements[0]
+        if gate_type in ['hoop', 'hex', 'square']:
+            self.movements.append(("GATE_IN_FRONT", gate_type))
+        else:
+            raise ValueError("Invalid gate type. Must be one of 'hoop', 'hex', 'square'.")
 
-        for direction, value in self.movements[1:]:
-            if direction == current_direction:
-                current_value += value
+    def reduce_movements(self):
+        reduced_movements = []
+        if not self.movements:
+            return reduced_movements
+
+        current_direction_values = {}
+
+        for direction, value in self.movements:
+            if direction == "GATE_IN_FRONT":
+                for dir, val in current_direction_values.items():
+                    reduced_movements.append((dir, val))
+                reduced_movements.append((direction, value))
+                current_direction_values = {}
             else:
-                reduced_movements.append((current_direction, current_value))
-                current_direction, current_value = direction, value
-        reduced_movements.append((current_direction, current_value))
+                if direction in current_direction_values:
+                    current_direction_values[direction] += value
+                else:
+                    current_direction_values[direction] = value
+
+        for dir, val in current_direction_values.items():
+            reduced_movements.append((dir, val))
+
         self.movements = reduced_movements
 
     def save_logs(self):
         if not LOGGING_ENABLED:
             return
+        self.reduce_movements()
         with open(self.filename, 'w') as file:
             for direction, value in self.movements:
-                file.write(f"{direction}: {value}\n")
+                file.write(f"{direction} {value}\n")
