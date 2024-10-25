@@ -31,10 +31,10 @@ drone_project/
 │   └── test_battery.py    # Tests for battery handling
 │
 │
-├── utils/             # Utility functions
-│   ├── battery.py     # Battery management
-│   ├── pygame.py     # Screen management
-│   └── logging.py     # Logging or debugging utilities
+├── utils/                  # Utility functions
+│   ├── battery.py          # Battery management
+│   ├── pygame.py           # Screen management
+│   └── logging.py          # Stockage des deplacements du drone
 │
 │
 └── README.md              # Project documentation

@@ -9,28 +9,12 @@ class Vision:
         self.face_cascade = cv2.CascadeClassifier(CHEMIN_DETECT)
         self.distance = None
         self.modele_hoop =  YOLO(MODEL_HOOP_PATH, verbose=False) 
+        self.hoops = []
         logging.getLogger('ultralytics').setLevel(logging.ERROR) #Ne plus afficher les messages du modèle dans la console
 
-    def process_frame(self, frame, screen):
-        # faces = self.get_faces_coordinates(frame)
-        # self.update_distance(faces)
-
-        # for (x, y, w, h) in faces:
-        #     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-        hoops = self.get_hoops(frame)
-        self.update_distance(hoops)
-
-        for hoop in hoops:
-            x1, y1, w, h, score = hoop
-            cv2.rectangle(frame, (x1, y1), (x1 + w, y1 + h), (255, 0, 0), 4)
-            cv2.putText(frame, f"HOOP {score:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (255, 0, 0), 3, cv2.LINE_AA)
-            #print(f"Coordonnées : {x1}, {y1}, {w}, {h}")
-
-        # Rotation and Pygame display
-        frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
-        frame = pygame.surfarray.make_surface(frame)
-        screen.blit(frame, (0, 0))
+    def process_frame(self, frame):
+        self.hoops = self.get_hoops(frame)
+        self.update_distance(self.hoops)
 
     def get_faces_coordinates(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
