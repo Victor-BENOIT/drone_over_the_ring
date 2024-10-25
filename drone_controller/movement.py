@@ -1,8 +1,10 @@
 from config.settings import DRONE_DIST
 
 class Movement:
-    def __init__(self, tello):
-        self.tello = tello
+    def __init__(self, drone_controller):
+        self.drone_controller = drone_controller
+        self.tello = drone_controller.tello
+        self.logging = drone_controller.logging
 
     def move_forward(self, distance = DRONE_DIST):
         self.tello.move_forward(distance)

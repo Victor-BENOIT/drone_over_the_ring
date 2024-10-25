@@ -4,6 +4,7 @@ from drone_controller.movement import Movement
 from drone_controller.vision import Vision
 from drone_controller.targeting import Target
 from drone_controller.flying_modes import ManualMode, AutonomousMode 
+from utils.logging import Logging
 from config.settings import DRONE_SPEED, MANUAL_MODE, AUTONOMOUS_MODE
 
 class DroneController:
@@ -14,7 +15,8 @@ class DroneController:
         self.tello.streamon()
 
         self.vision = Vision()
-        self.movement = Movement(self.tello)
+        self.logging = Logging()
+        self.movement = Movement(self)
         self.target = Target()
         if AUTONOMOUS_MODE:
             self.mode = AutonomousMode(self)
