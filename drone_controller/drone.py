@@ -1,4 +1,5 @@
 import cv2
+from utils.logging import Logging
 from djitellopy import Tello
 from drone_controller.movement import Movement
 from drone_controller.vision import Vision

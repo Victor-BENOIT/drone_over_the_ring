@@ -75,3 +75,5 @@ WINDOW_CORNER_Y = SCREEN_HEIGHT / 2 - WINDOW_HEIGHT / 2 + WINDOW_OFFSET_Y #px
 TARGET_DIST = 125 # Distance fisée par rapport à la cible en cm
 MOVE_RATIO = 0.6 # [0:1] Ratio de déplacement par rapport à la distance de la cible
 DEAD_ZONE = 10 # Zone morte pour le déplacement en cm
+
+DEAD_ZONE_SCAN = 20 #dead zoen pour centrer la porte pendant le balleyage 

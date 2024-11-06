@@ -15,6 +15,8 @@ class Vision:
     def process_frame(self, frame):
         self.hoops = self.get_hoops(frame)
         self.update_distance(self.hoops)
+        print(self.distance)
+        print(self.hoops)
 
     def get_faces_coordinates(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
