@@ -4,8 +4,8 @@ from djitellopy import Tello
 from drone_controller.movement import Movement
 from drone_controller.vision import Vision
 from drone_controller.targeting import Target
-from drone_controller.flying_modes import ManualMode, AutonomousMode, ScanMode
-from config.settings import DRONE_SPEED, MANUAL_MODE, AUTONOMOUS_MODE,SCAN_MODE
+from drone_controller.flying_modes import IdleMode, ManualMode, AutonomousMode, ScanMode
+from config.settings import DRONE_SPEED, MANUAL_MODE, AUTONOMOUS_MODE, SCAN_MODE, IDLE_MODE
 
 class DroneController:
     def __init__(self):
@@ -18,7 +18,9 @@ class DroneController:
         self.logging = Logging()
         self.movement = Movement(self)
         self.target = Target()
-        if AUTONOMOUS_MODE:
+        if IDLE_MODE:
+            self.mode = IdleMode(self)
+        elif AUTONOMOUS_MODE:
             self.mode = AutonomousMode(self)
         elif MANUAL_MODE:
             self.mode = ManualMode(self)

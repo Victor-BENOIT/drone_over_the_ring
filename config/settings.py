@@ -2,7 +2,8 @@
 #                                       Paramètres de chemin d'accès
 #################################################################################################################
 CHEMIN_DETECT = "resources/detect_profil.xml"  # Chemin d'accès au fichier de détection de visage
-MODEL_HOOP_HEX_PATH = r'resources\runs\detect\train9\weights\last.pt'
+MODEL_HOOP_PATH = r'resources\runs\detect\train9\weights\last.pt' # Chemin d'accès au modèle Hoop
+MODEL_HEX_PATH = r'resources\runs\detect\train5\weights\last.pt' # Chemin d'accès au modèle Hex
 
 
 #################################################################################################################
@@ -18,7 +19,7 @@ HAUTEUR_REELLE_HOOP = 0.62 * 2 # Hauteur réelle d'un cercle en mètres // RAPPO
 #                                       Paramètres pour le modele de détection
 #################################################################################################################
 THRESHOLD_HOOP = 0.9 # Seuil de detection cercle
-
+THRESHOLD_HEX = 0.9 # Seuil de detection hexagone
 #################################################################################################################
 #                                       Paramètres de logging (stockage des deplacements du drone)
 #################################################################################################################
@@ -30,17 +31,26 @@ LOGGING_ENABLED = True
 #################################################################################################################
 DRONE_SPEED = 100  # 10-100 (vitesse de déplacement par défaut)
 DRONE_DIST = 20  # 20-500cm (distance de déplacement par défaut)
-MANUAL_MODE = False # True pour le mode manuel, False pour le mode autonome
+
+IDLE_MODE = False
+MANUAL_MODE = False
 AUTONOMOUS_MODE = True 
 SCAN_MODE = False
 
+if IDLE_MODE:
+    MANUAL_MODE = False
+    AUTONOMOUS_MODE = False
+    SCAN_MODE = False
 if MANUAL_MODE:
+    IDLE_MODE = False
     AUTONOMOUS_MODE = False
     SCAN_MODE = False
 elif AUTONOMOUS_MODE:
+    IDLE_MODE = False
     MANUAL_MODE = False
     SCAN_MODE = False
 elif SCAN_MODE:
+    IDLE_MODE = False
     MANUAL_MODE = False
     AUTONOMOUS_MODE = False
 

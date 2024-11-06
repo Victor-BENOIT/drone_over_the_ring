@@ -73,7 +73,7 @@ class PygameDisplay:
             x1, y1, w, h, score, class_id = gate
             new_x1 = SCREEN_WIDTH - (x1 + w)
             pygame.draw.rect(self.screen, (0, 255, 0), (new_x1, y1, w, h), 4)
-            score_text = self.font.render(str(class_id) + f" : {score:.2f}", True, (0, 255, 0))
+            score_text = self.font.render(class_id + f" : {score:.2f}", True, (0, 255, 0))
             self.screen.blit(score_text, (new_x1, y1 - 20))
     
     def quit(self):

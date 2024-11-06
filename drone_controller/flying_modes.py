@@ -1,6 +1,21 @@
 from drone_controller.keyboard_control import Keyboard
 from config.settings import TARGET_DIST, DEAD_ZONE, MOVE_RATIO,SCREEN_WIDTH, DEAD_ZONE_SCAN
 
+class IdleMode:
+    def __init__(self, controller):
+        self.controller = controller
+        self.tello = controller.tello
+        self.vision = controller.vision
+
+    def start(self):
+        print("Mode Idle activé.")
+
+    def main_loop(self):
+        return  # Ne fait rien en mode Idle
+
+    def stop(self):
+        return  # Ne fait rien en mode Idle
+
 class ManualMode:
     def __init__(self, controller):
         self.controller = controller
@@ -31,14 +46,14 @@ class AutonomousMode:
         self.locked_distance = False
 
     def start(self):
-        print("Mode autonome activé.\nTracking du visage activé")
+        print("Mode autonome activé.")
         if not self.controller.is_flying():
             self.controller.takeoff()
         self.controller.movement.move_up(130 - self.tello.get_height())
 
     def main_loop(self):
         # print("LOCK: " + str(self.locked_horizontal) + " " + str(self.locked_vertical) + " " + str(self.locked_distance))
-
+        print(self.vision.gates)
         if self.locked_horizontal == True & self.locked_vertical == True & self.locked_distance == True:
             self.controller.logging.add_gate_marker("hoop")
             self.controller.movement.move_forward(int(self.vision.distance) + 170)
