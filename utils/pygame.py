@@ -25,7 +25,7 @@ class PygameDisplay:
             self.display_distance(self.drone.vision.distance)
             self.display_battery()
             self.display_frame(self.drone.get_frame())
-            self.display_hoops()
+            self.display_gates()
             pygame.display.update()
 
     def handle_events(self):
@@ -68,12 +68,12 @@ class PygameDisplay:
         pygame.draw.rect(self.screen, (255, 0, 0), target, 5)
         pygame.display.update()
 
-    def display_hoops(self):
-        for hoop in self.drone.vision.hoops:
-            x1, y1, w, h, score = hoop
+    def display_gates(self):
+        for gate in self.drone.vision.gates:
+            x1, y1, w, h, score, class_id = gate
             new_x1 = SCREEN_WIDTH - (x1 + w)
             pygame.draw.rect(self.screen, (0, 255, 0), (new_x1, y1, w, h), 4)
-            score_text = self.font.render(f"HOOP {score:.2f}", True, (0, 255, 0))
+            score_text = self.font.render(str(class_id) + f" : {score:.2f}", True, (0, 255, 0))
             self.screen.blit(score_text, (new_x1, y1 - 20))
     
     def quit(self):

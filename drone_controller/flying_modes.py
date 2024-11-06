@@ -35,13 +35,14 @@ class AutonomousMode:
         if not self.controller.is_flying():
             self.controller.takeoff()
         while self.tello.get_height() < 120:
-            self.controller.movement.move_up()
+            self.controller.movement.move_up(50)
 
     def main_loop(self):
-        print("LOCK: " + str(self.locked_horizontal) + " " + str(self.locked_vertical) + " " + str(self.locked_distance))
+        # print("LOCK: " + str(self.locked_horizontal) + " " + str(self.locked_vertical) + " " + str(self.locked_distance))
 
         if self.locked_horizontal == True & self.locked_vertical == True & self.locked_distance == True:
-            self.controller.movement.move_forward(self.vision.distance + 130)
+            self.controller.logging.add_gate_marker("hoop")
+            self.controller.movement.move_forward(int(self.vision.distance) + 170)
             self.controller.land()
         else :
             self.horizontal_vertical_tracking()
@@ -52,9 +53,9 @@ class AutonomousMode:
             self.controller.land()
 
     def horizontal_vertical_tracking(self):
-        list = self.vision.get_hoops(self.controller.get_frame())
+        list = self.vision.get_gates(self.controller.get_frame())
         if len(list) == 1:
-            (x, y, w, h, _) = list[0]
+            (x, y, w, h, score, class_id) = list[0]
             x_center_box = x + w / 2
             y_center_box = y + h / 2
 
