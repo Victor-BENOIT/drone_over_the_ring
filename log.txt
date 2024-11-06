@@ -1,7 +1,1 @@
-up 100
-forward 133
-right 20
-down 20
-GATE_IN_FRONT hoop
-forward 289
-GATE_IN_FRONT hoop
+up 60

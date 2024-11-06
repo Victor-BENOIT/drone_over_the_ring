@@ -34,8 +34,7 @@ class AutonomousMode:
         print("Mode autonome activé.\nTracking du visage activé")
         if not self.controller.is_flying():
             self.controller.takeoff()
-        while self.tello.get_height() < 120:
-            self.controller.movement.move_up(50)
+        self.controller.movement.move_up(130 - self.tello.get_height())
 
     def main_loop(self):
         # print("LOCK: " + str(self.locked_horizontal) + " " + str(self.locked_vertical) + " " + str(self.locked_distance))
