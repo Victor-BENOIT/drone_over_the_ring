@@ -2,7 +2,7 @@
 #                                       Paramètres de chemin d'accès
 #################################################################################################################
 CHEMIN_DETECT = "resources/detect_profil.xml"  # Chemin d'accès au fichier de détection de visage
-MODEL_HOOP_PATH = r'resources\runs\detect\train9\weights\last.pt'
+MODEL_HOOP_HEX_PATH = r'resources\runs\detect\train9\weights\last.pt'
 
 
 #################################################################################################################

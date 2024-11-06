@@ -1,20 +1,19 @@
 import cv2
 from ultralytics import YOLO
 import logging
-import pygame
-from config.settings import CHEMIN_DETECT, MODEL_HOOP_PATH, THRESHOLD_HOOP, HAUTEUR_REELLE_HOOP, FOCALE, TAILLE_PIX, HAUTEUR_REELLE_VISAGE
+from config.settings import CHEMIN_DETECT, MODEL_HOOP_HEX_PATH, THRESHOLD_HOOP, HAUTEUR_REELLE_HOOP, FOCALE, TAILLE_PIX, HAUTEUR_REELLE_VISAGE
 
 class Vision:
     def __init__(self):
         self.face_cascade = cv2.CascadeClassifier(CHEMIN_DETECT)
         self.distance = None
-        self.modele_hoop =  YOLO(MODEL_HOOP_PATH, verbose=False) 
-        self.hoops = []
+        self.model_hoop_hex = YOLO(MODEL_HOOP_HEX_PATH, verbose=False) 
+        self.gates = []
         logging.getLogger('ultralytics').setLevel(logging.ERROR) #Ne plus afficher les messages du modèle dans la console
 
     def process_frame(self, frame):
-        self.hoops = self.get_hoops(frame)
-        self.update_distance(self.hoops)
+        self.gates = self.get_gates(frame)
+        self.update_distance(self.gates)
 
     def get_faces_coordinates(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -23,20 +22,20 @@ class Vision:
 
     def update_distance(self, list):
         if(len(list) == 1):
-            for (x, y, w, h, _) in list:
+            for (_, _, _, h, _, _) in list:
                 grandissement = h * TAILLE_PIX / HAUTEUR_REELLE_HOOP
                 self.distance = int(FOCALE * (1 / grandissement + 2 + grandissement) * 100)
         elif len(list) == 0:
            self.distance = None
 
 
-    def get_hoops(self, frame):
+    def get_gates(self, frame):
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        results_hoop = self.modele_hoop(frame_rgb)[0]
-        hoops = []
+        results_gates = self.model_hoop_hex(frame_rgb)[0]
+        gates = []
 
-        for result in results_hoop.boxes.data.tolist():
+        for result in results_gates.boxes.data.tolist():
             x1, y1, x2, y2, score, class_id = result
             w = x2 - x1
             h = y2 - y1
@@ -45,5 +44,5 @@ class Vision:
             w = int(w)
             h = int(h)
             if score > THRESHOLD_HOOP:
-                hoops.append([x1, y1, w, h, score])
-        return hoops
+                gates.append([x1, y1, w, h, score, class_id])
+        return gates

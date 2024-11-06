@@ -53,9 +53,9 @@ class AutonomousMode:
             self.controller.land()
 
     def horizontal_vertical_tracking(self):
-        list = self.vision.get_hoops(self.controller.get_frame())
+        list = self.vision.get_gates(self.controller.get_frame())
         if len(list) == 1:
-            (x, y, w, h, _) = list[0]
+            (x, y, w, h, score, class_id) = list[0]
             x_center_box = x + w / 2
             y_center_box = y + h / 2
 
