@@ -1,11 +1,11 @@
 import cv2
+from utils.logging import Logging
 from djitellopy import Tello
 from drone_controller.movement import Movement
 from drone_controller.vision import Vision
 from drone_controller.targeting import Target
-from drone_controller.flying_modes import ManualMode, AutonomousMode 
-from utils.logging import Logging
-from config.settings import DRONE_SPEED, MANUAL_MODE, AUTONOMOUS_MODE
+from drone_controller.flying_modes import ManualMode, AutonomousMode, ScanMode
+from config.settings import DRONE_SPEED, MANUAL_MODE, AUTONOMOUS_MODE,SCAN_MODE
 
 class DroneController:
     def __init__(self):
@@ -22,6 +22,8 @@ class DroneController:
             self.mode = AutonomousMode(self)
         elif MANUAL_MODE:
             self.mode = ManualMode(self)
+        elif SCAN_MODE: 
+            self.mode = ScanMode(self)
     
     def takeoff(self):
         self.tello.takeoff()

@@ -31,7 +31,8 @@ LOGGING_ENABLED = True
 DRONE_SPEED = 100  # 10-100 (vitesse de déplacement par défaut)
 DRONE_DIST = 20  # 20-500cm (distance de déplacement par défaut)
 MANUAL_MODE = False # True pour le mode manuel, False pour le mode autonome
-AUTONOMOUS_MODE = not MANUAL_MODE 
+AUTONOMOUS_MODE = False 
+SCAN_MODE = True
 
 
 #################################################################################################################
@@ -74,3 +75,5 @@ WINDOW_CORNER_Y = SCREEN_HEIGHT / 2 - WINDOW_HEIGHT / 2 + WINDOW_OFFSET_Y #px
 TARGET_DIST = 125 # Distance fisée par rapport à la cible en cm
 MOVE_RATIO = 0.6 # [0:1] Ratio de déplacement par rapport à la distance de la cible
 DEAD_ZONE = 10 # Zone morte pour le déplacement en cm
+
+DEAD_ZONE_SCAN = 20 #dead zoen pour centrer la porte pendant le balleyage 

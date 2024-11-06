@@ -1,5 +1,5 @@
 from drone_controller.keyboard_control import Keyboard
-from config.settings import TARGET_DIST, DEAD_ZONE, MOVE_RATIO
+from config.settings import TARGET_DIST, DEAD_ZONE, MOVE_RATIO,SCREEN_WIDTH, DEAD_ZONE_SCAN
 
 class ManualMode:
     def __init__(self, controller):
@@ -116,3 +116,65 @@ class AutonomousMode:
 
         else:
             return
+
+class ScanMode:
+    def __init__(self, controller):
+        self.controller = controller
+        self.tello = controller.tello
+        self.vision = controller.vision  # Utilise la classe Vision qui contient `distance` et `door`
+        self.angle = 0  # Attribut pour suivre l'angle
+        self.increment = 5  # Incrément de rotation
+
+    def start(self):
+        print("Mode Scan activé.")
+        if not self.controller.is_flying():
+            self.controller.takeoff()
+        while self.tello.get_height() < 170:
+            self.controller.movement.move_up(50)
+
+    def rotate_360(self):
+        print("Début de la rotation à 360 degrés")
+
+    def detect_door(self):
+    # Vérifie d'abord que la liste `hoops` contient au moins un élément
+        if self.vision.hoops:
+            x, _, _, _, _ = self.vision.hoops[0]  # Coordonnée x de la première porte détectée
+            print(f"Détection en cours - Coordonnée x: {x}, Distance: {self.vision.distance},Angle : {self.angle}")
+
+            # Vérifie que la distance est définie et que la porte est dans la zone de détection
+            if (
+                self.vision.distance is not None 
+                and ((SCREEN_WIDTH / 2 - DEAD_ZONE_SCAN) < x < (SCREEN_WIDTH / 2 + DEAD_ZONE_SCAN))
+            ):
+                # Enregistre les informations de la porte détectée
+                self.detected_door = {
+                    "distance": self.vision.distance,
+                    "angle": self.angle,  # Angle actuel de détection
+                    "porte": self.vision.hoops
+                }
+                print(f"Porte détectée - Coordonnée x: {x}, Distance: {self.vision.distance}, Angle : {self.angle}")
+            else:
+                print("Porte détectée mais hors de la zone centrale")
+        else:
+            print("Aucune porte détectée dans `self.vision.hoops`")
+
+
+
+    def main_loop(self):
+        # Cette méthode doit être appelée régulièrement pour faire avancer la logique
+        if self.angle < 360:
+            self.tello.rotate_clockwise(self.increment)
+            self.angle += self.increment
+            # Tente de détecter une porte à chaque incrément de rotation
+            self.detect_door()
+        else:
+            print("Rotation à 360 degrés terminée")
+            self.stop()  # Arrêter le drone lorsque la rotation est terminée
+
+    def stop(self):
+        if self.controller.is_flying():
+            self.controller.land()
+
+
+
+    
