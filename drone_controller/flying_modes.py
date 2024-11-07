@@ -2,6 +2,21 @@ from drone_controller.keyboard_control import Keyboard
 from math import sqrt
 from config.settings import TARGET_DIST, DEAD_ZONE, MOVE_RATIO,SCREEN_WIDTH, DEAD_ZONE_SCAN
 
+class IdleMode:
+    def __init__(self, controller):
+        self.controller = controller
+        self.tello = controller.tello
+        self.vision = controller.vision
+
+    def start(self):
+        print("Mode Idle activé.")
+
+    def main_loop(self):
+        return  # Ne fait rien en mode Idle
+
+    def stop(self):
+        return  # Ne fait rien en mode Idle
+
 class ManualMode:
     def __init__(self, controller):
         self.controller = controller
@@ -30,21 +45,26 @@ class AutonomousMode:
         self.locked_horizontal = False
         self.locked_vertical = False
         self.locked_distance = False
+        self.gates_passed = 0
 
     def start(self):
-        print("Mode autonome activé.\nTracking du visage activé")
+        print("Mode autonome activé.")
         if not self.controller.is_flying():
             self.controller.takeoff()
-        while self.tello.get_height() < 120:
-            self.controller.movement.move_up(50)
+        self.controller.movement.move_up(130 - self.tello.get_height())
 
     def main_loop(self):
         # print("LOCK: " + str(self.locked_horizontal) + " " + str(self.locked_vertical) + " " + str(self.locked_distance))
+        if self.gates_passed == 2:
+            self.controller.land()
+            return
+        
+        print(self.vision.gates)
 
         if self.locked_horizontal == True & self.locked_vertical == True & self.locked_distance == True:
-            self.controller.logging.add_gate_marker("hoop")
-            self.controller.movement.move_forward(int(self.vision.distance) + 170)
-            self.controller.land()
+            self.controller.movement.cross_gate(int(self.vision.distance), self.vision.gates[0][5])
+            # self.controller.movement.move_forward(100)
+            self.gates_passed += 1
         else :
             self.horizontal_vertical_tracking()
             self.distance_tracking()

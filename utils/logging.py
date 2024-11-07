@@ -12,10 +12,10 @@ class Logging:
     def add_movement(self, direction, value):
         if not LOGGING_ENABLED:
             return
-        if direction in ['up', 'down', 'right', 'left', 'forward', 'backward']:
+        if direction in ['up', 'down', 'right', 'left', 'forward', 'backward', 'rotate_clockwise', 'rotate_counter_clockwise']:
             self.movements.append((direction, value))
         else:
-            raise ValueError("Invalid direction. Must be one of 'up', 'down', 'right', 'left', 'forward', 'backward'.")
+            print("Invalid direction. Must be one of 'up', 'down', 'right', 'left', 'forward', 'backward', 'rotate_clockwise', 'rotate_counter_clockwise'.")
         
     def add_gate_marker(self, gate_type):
         if not LOGGING_ENABLED:
@@ -23,7 +23,7 @@ class Logging:
         if gate_type in ['hoop', 'hex', 'square']:
             self.movements.append(("GATE_IN_FRONT", gate_type))
         else:
-            raise ValueError("Invalid gate type. Must be one of 'hoop', 'hex', 'square'.")
+            print("Invalid gate type. Must be one of 'hoop', 'hex', 'square'.")
 
     def reduce_movements(self):
         reduced_movements = []

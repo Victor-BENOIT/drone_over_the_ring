@@ -1,13 +1,14 @@
 import cv2
 from ultralytics import YOLO
 import logging
-from config.settings import CHEMIN_DETECT, MODEL_HOOP_HEX_PATH, THRESHOLD_HOOP, HAUTEUR_REELLE_HOOP, FOCALE, TAILLE_PIX, HAUTEUR_REELLE_VISAGE
+from config.settings import CHEMIN_DETECT, MODEL_HOOP_PATH, MODEL_HEX_PATH, THRESHOLD_HEX, THRESHOLD_HOOP, HAUTEUR_REELLE_HOOP, FOCALE, TAILLE_PIX, HAUTEUR_REELLE_VISAGE
 
 class Vision:
     def __init__(self):
         self.face_cascade = cv2.CascadeClassifier(CHEMIN_DETECT)
         self.distance = None
-        self.model_hoop_hex = YOLO(MODEL_HOOP_HEX_PATH, verbose=False) 
+        self.model_hoop = YOLO(MODEL_HOOP_PATH, verbose=False)
+        self.model_hex = YOLO(MODEL_HEX_PATH, verbose=False)
         self.gates = []
         logging.getLogger('ultralytics').setLevel(logging.ERROR) #Ne plus afficher les messages du modèle dans la console
 
@@ -32,11 +33,12 @@ class Vision:
     def get_gates(self, frame):
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        results_gates = self.model_hoop_hex(frame_rgb)[0]
+        results_hoops = self.model_hoop(frame_rgb)[0]
+        results_hex = self.model_hex(frame_rgb)[0]
         gates = []
 
-        for result in results_gates.boxes.data.tolist():
-            x1, y1, x2, y2, score, class_id = result
+        for result in results_hoops.boxes.data.tolist():
+            x1, y1, x2, y2, score, _ = result
             w = x2 - x1
             h = y2 - y1
             x1 = int(x1)
@@ -44,5 +46,17 @@ class Vision:
             w = int(w)
             h = int(h)
             if score > THRESHOLD_HOOP:
-                gates.append([x1, y1, w, h, score, class_id])
+                gates.append([x1, y1, w, h, round(score, 2), "hoop"])
+
+        for result in results_hex.boxes.data.tolist():
+            x1, y1, x2, y2, score, _ = result
+            w = x2 - x1
+            h = y2 - y1
+            x1 = int(x1)
+            y1 = int(y1)
+            w = int(w)
+            h = int(h)
+            if score > THRESHOLD_HEX:
+                gates.append([x1, y1, w, h, round(score, 2), "hex"])
+
         return gates
