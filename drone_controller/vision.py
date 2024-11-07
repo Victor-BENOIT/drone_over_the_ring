@@ -1,7 +1,7 @@
 import cv2
 from ultralytics import YOLO
 import logging
-from config.settings import CHEMIN_DETECT, MODEL_HOOP_PATH, MODEL_HEX_PATH, THRESHOLD_HEX, THRESHOLD_HOOP, HAUTEUR_REELLE_HOOP, FOCALE, TAILLE_PIX, HAUTEUR_REELLE_VISAGE
+from config.settings import CHEMIN_DETECT, MODEL_HOOP_PATH, MODEL_HEX_PATH, THRESHOLD_HEX, THRESHOLD_HOOP, HAUTEUR_REELLE_HOOP, FOCALE, TAILLE_PIX, HAUTEUR_REELLE_HEX_VERTICAL, HAUTEUR_REELLE_HEX_HORIZONTAL
 
 class Vision:
     def __init__(self):
@@ -23,9 +23,13 @@ class Vision:
 
     def update_distance(self, list):
         if(len(list) == 1):
-            for (_, _, _, h, _, _) in list:
-                grandissement = h * TAILLE_PIX / HAUTEUR_REELLE_HOOP
-                self.distance = int(FOCALE * (1 / grandissement + 2 + grandissement) * 100)
+            for (_, _, _, h, _, class_id) in list:
+                if class_id == "hoop":
+                    grandissement = h * TAILLE_PIX / HAUTEUR_REELLE_HOOP
+                    self.distance = int(FOCALE * (1 / grandissement + 2 + grandissement) * 100)
+                elif class_id == "hex":
+                    grandissement = h * TAILLE_PIX / HAUTEUR_REELLE_HEX_VERTICAL
+                    self.distance = int(FOCALE * (1 / grandissement + 2 + grandissement) * 100)   
         elif len(list) == 0:
            self.distance = None
 
