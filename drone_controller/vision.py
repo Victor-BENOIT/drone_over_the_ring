@@ -8,7 +8,7 @@ class Vision:
         self.face_cascade = cv2.CascadeClassifier(CHEMIN_DETECT)
         self.distance = None
         self.model_hoop = YOLO(MODEL_HOOP_PATH, verbose=False)
-        self.model_hex = YOLO(MODEL_HEX_PATH, verbose=False) 
+        self.model_hex = YOLO(MODEL_HEX_PATH, verbose=False)
         self.gates = []
         logging.getLogger('ultralytics').setLevel(logging.ERROR) #Ne plus afficher les messages du modèle dans la console
 
@@ -46,7 +46,7 @@ class Vision:
             w = int(w)
             h = int(h)
             if score > THRESHOLD_HOOP:
-                gates.append([x1, y1, w, h, score, "hoop"])
+                gates.append([x1, y1, w, h, round(score, 2), "hoop"])
 
         for result in results_hex.boxes.data.tolist():
             x1, y1, x2, y2, score, _ = result
@@ -57,6 +57,6 @@ class Vision:
             w = int(w)
             h = int(h)
             if score > THRESHOLD_HEX:
-                gates.append([x1, y1, w, h, score, "hex"])
-                
+                gates.append([x1, y1, w, h, round(score, 2), "hex"])
+
         return gates

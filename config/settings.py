@@ -18,7 +18,7 @@ HAUTEUR_REELLE_HOOP = 0.62 * 2 # Hauteur réelle d'un cercle en mètres // RAPPO
 #################################################################################################################
 #                                       Paramètres pour le modele de détection
 #################################################################################################################
-THRESHOLD_HOOP = 0.9 # Seuil de detection cercle
+THRESHOLD_HOOP = 0.94 # Seuil de detection cercle
 THRESHOLD_HEX = 0.9 # Seuil de detection hexagone
 #################################################################################################################
 #                                       Paramètres de logging (stockage des deplacements du drone)
@@ -91,7 +91,7 @@ else :
 WINDOW_CORNER_X = SCREEN_WIDTH / 2 - WINDOW_WIDTH /2 + WINDOW_OFFSET_X #px
 WINDOW_CORNER_Y = SCREEN_HEIGHT / 2 - WINDOW_HEIGHT / 2 + WINDOW_OFFSET_Y #px
 
-TARGET_DIST = 125 # Distance fisée par rapport à la cible en cm
+TARGET_DIST = 150 # Distance fisée par rapport à la cible en cm
 MOVE_RATIO = 0.6 # [0:1] Ratio de déplacement par rapport à la distance de la cible
 DEAD_ZONE = 10 # Zone morte pour le déplacement en cm
 

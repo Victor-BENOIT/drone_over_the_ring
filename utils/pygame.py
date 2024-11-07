@@ -72,9 +72,14 @@ class PygameDisplay:
         for gate in self.drone.vision.gates:
             x1, y1, w, h, score, class_id = gate
             new_x1 = SCREEN_WIDTH - (x1 + w)
-            pygame.draw.rect(self.screen, (0, 255, 0), (new_x1, y1, w, h), 4)
-            score_text = self.font.render(class_id + f" : {score:.2f}", True, (0, 255, 0))
-            self.screen.blit(score_text, (new_x1, y1 - 20))
+            if class_id == "hoop":
+                pygame.draw.rect(self.screen, (37, 150, 190), (new_x1, y1, w, h), 4)
+                score_text = self.font.render(class_id + f" : {score:.2f}", True, (255, 255, 255))
+                self.screen.blit(score_text, (new_x1, y1 - 30))
+            elif class_id == "hex":
+                pygame.draw.rect(self.screen, (255, 128, 36), (new_x1, y1, w, h), 4)
+                score_text = self.font.render(class_id + f" : {score:.2f}", True, (255, 255, 255))
+                self.screen.blit(score_text, (new_x1, y1 - 30))
     
     def quit(self):
         pygame.quit()

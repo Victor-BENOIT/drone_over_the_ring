@@ -1,10 +1,10 @@
 from config.settings import DRONE_DIST
 
 class Movement:
-    def __init__(self, drone_controller):
-        self.drone_controller = drone_controller
-        self.tello = drone_controller.tello
-        self.logging = drone_controller.logging
+    def __init__(self, controller):
+        self.controller = controller
+        self.tello = controller.tello
+        self.logging = controller.logging
 
     def move_forward(self, distance = DRONE_DIST):
         self.tello.move_forward(distance)
@@ -29,3 +29,23 @@ class Movement:
     def move_down(self, distance = DRONE_DIST):
         self.tello.move_down(distance)
         self.logging.add_movement('down', distance)
+
+    def rotate_clockwise(self, angle):
+        self.tello.rotate_clockwise(angle)
+        self.logging.add_movement('rotate_clockwise', angle)
+
+    def rotate_counter_clockwise(self, angle):
+        self.tello.rotate_counter_clockwise(angle)
+        self.logging.add_movement('rotate_counter_clockwise', angle)
+
+    def cross_gate(self, distance, type):
+        self.logging.add_gate_marker(type)
+        self.tello.move_forward(distance + 100)
+        if type == "hoop":
+            self.rotate_clockwise(110)
+        elif type == "hex":
+            self.rotate_counter_clockwise(110)
+
+        self.controller.mode.locked_vertical = False
+        self.controller.mode.locked_horizontal = False
+        self.controller.mode.locked_distance = False
