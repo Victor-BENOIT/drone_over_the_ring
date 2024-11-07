@@ -1,4 +1,5 @@
 from drone_controller.keyboard_control import Keyboard
+from math import sqrt
 from config.settings import TARGET_DIST, DEAD_ZONE, MOVE_RATIO,SCREEN_WIDTH, DEAD_ZONE_SCAN
 
 class ManualMode:
@@ -124,46 +125,43 @@ class ScanMode:
         self.tello = controller.tello
         self.vision = controller.vision  # Utilise la classe Vision qui contient `distance` et `door`
         self.angle = 0  # Attribut pour suivre l'angle
-        self.increment = 5  # Incrément de rotation
+        self.increment = 10  # Incrément de rotation
+        self.detected_doors_list = []  # Liste pour stocker toutes les portes détectées
 
     def start(self):
         print("Mode Scan activé.")
         if not self.controller.is_flying():
             self.controller.takeoff()
-        while self.tello.get_height() < 170:
+        while self.tello.get_height() < 120:
             self.controller.movement.move_up(50)
 
     def rotate_360(self):
         print("Début de la rotation à 360 degrés")
 
     def detect_door(self):
-    # Vérifie d'abord que la liste `hoops` contient au moins un élément
-        if self.vision.hoops:
-            x, _, _, _, _ = self.vision.hoops[0]  # Coordonnée x de la première porte détectée
-            print(f"Détection en cours - Coordonnée x: {x}, Distance: {self.vision.distance},Angle : {self.angle}")
-
+        # Vérifie d'abord que la liste `gates` contient au moins un élément
+        if self.vision.gates:
+            x, _, w, _, _, type = self.vision.gates[0]  # Coordonnée x de la première porte détectée
+            
             # Vérifie que la distance est définie et que la porte est dans la zone de détection
             if (
                 self.vision.distance is not None 
-                and ((SCREEN_WIDTH / 2 - DEAD_ZONE_SCAN) < x < (SCREEN_WIDTH / 2 + DEAD_ZONE_SCAN))
+                and ((SCREEN_WIDTH / 2 - DEAD_ZONE_SCAN) < (x + w / 2) < (SCREEN_WIDTH / 2 + DEAD_ZONE_SCAN))
             ):
                 # Enregistre les informations de la porte détectée
                 self.detected_door = {
                     "distance": self.vision.distance,
-                    "angle": self.angle,  # Angle actuel de détection
-                    "porte": self.vision.hoops
+                    "angle": self.angle / 1.25,  # Angle actuel de détection
+                    "porte": type
                 }
-                print(f"Porte détectée - Coordonnée x: {x}, Distance: {self.vision.distance}, Angle : {self.angle}")
-            else:
-                print("Porte détectée mais hors de la zone centrale")
-        else:
-            print("Aucune porte détectée dans `self.vision.hoops`")
-
-
+                print(f"GOOD - Porte: {type}, Distance: {self.vision.distance}, Angle: {self.angle / 1.25}")
+                # Ajoute la détection à la liste
+                self.detected_doors_list.append(self.detected_door)
+                print(self.detected_doors_list)
 
     def main_loop(self):
         # Cette méthode doit être appelée régulièrement pour faire avancer la logique
-        if self.angle < 360:
+        if self.angle < 220:
             self.tello.rotate_clockwise(self.increment)
             self.angle += self.increment
             # Tente de détecter une porte à chaque incrément de rotation
