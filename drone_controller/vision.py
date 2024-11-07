@@ -23,13 +23,22 @@ class Vision:
 
     def update_distance(self, list):
         if(len(list) == 1):
-            for (_, _, _, h, _, class_id) in list:
+            for (_, _, w, h, _, class_id) in list:
+
                 if class_id == "hoop":
-                    grandissement = h * TAILLE_PIX / HAUTEUR_REELLE_HOOP
-                    self.distance = int(FOCALE * (1 / grandissement + 2 + grandissement) * 100)
+                    grandissement_vertical = h * TAILLE_PIX / HAUTEUR_REELLE_HOOP
+                    grandissement_horizontal = w * TAILLE_PIX / HAUTEUR_REELLE_HOOP
+                    dist_vertical = int(FOCALE * (1 / grandissement_vertical + 2 + grandissement_vertical) * 100)
+                    dist_horizontal = int(FOCALE * (1 / grandissement_horizontal + 2 + grandissement_horizontal) * 100)    
+                    self.distance = dist_vertical if dist_vertical < dist_horizontal else dist_horizontal
+
                 elif class_id == "hex":
-                    grandissement = h * TAILLE_PIX / HAUTEUR_REELLE_HEX_VERTICAL
-                    self.distance = int(FOCALE * (1 / grandissement + 2 + grandissement) * 100)   
+                    grandissement_vertical = h * TAILLE_PIX / HAUTEUR_REELLE_HEX_VERTICAL
+                    grandissement_horizontal = w * TAILLE_PIX / HAUTEUR_REELLE_HEX_HORIZONTAL
+                    dist_vertical = int(FOCALE * (1 / grandissement_vertical + 2 + grandissement_vertical) * 100)
+                    dist_horizontal = int(FOCALE * (1 / grandissement_horizontal + 2 + grandissement_horizontal) * 100)
+                    self.distance = dist_vertical if dist_vertical < dist_horizontal else dist_horizontal
+                    
         elif len(list) == 0:
            self.distance = None
 
