@@ -1,9 +1,9 @@
 #################################################################################################################
 #                                       Paramètres de chemin d'accès
 #################################################################################################################
-CHEMIN_DETECT = "drone_over_the_ring/resources/detect_profil.xml"  # Chemin d'accès au fichier de détection de visage
-MODEL_HOOP_PATH = r'drone_over_the_ring\resources\runs\detect\train9\weights\last.pt' # Chemin d'accès au modèle Hoop
-MODEL_HEX_PATH = r'drone_over_the_ring\resources\runs\detect\train5\weights\last.pt' # Chemin d'accès au modèle Hex
+CHEMIN_DETECT = "resources/detect_profil.xml"  # Chemin d'accès au fichier de détection de visage
+MODEL_HOOP_PATH = r'resources\runs\detect\train9\weights\last.pt' # Chemin d'accès au modèle Hoop
+MODEL_HEX_PATH = r'resources\runs\detect\train5\weights\last.pt' # Chemin d'accès au modèle Hex
 
 #################################################################################################################
 #                                       Paramètres pour le calcul de distance
@@ -34,8 +34,8 @@ DRONE_DIST = 20  # 20-500cm (distance de déplacement par défaut)
 
 IDLE_MODE = False
 MANUAL_MODE = False
-AUTONOMOUS_MODE = False
-SCAN_MODE = True
+AUTONOMOUS_MODE = True
+SCAN_MODE = False
 
 if IDLE_MODE:
     MANUAL_MODE = False
