@@ -1,41 +1,41 @@
-# drone_over_the_ring
+# Drone Over The Ring
 Projet Industriel / Drone Over The Ring / MBDA
 
+## Structure du projet
+
+```
 drone_project/
 │
-├── main.py           # Entry point for the drone control
+├── main.py                # Point d'entrée pour le contrôle du drone
 │
+├── log.txt                # Fichier d'enregistrement des differents mouvements réalisés
 │
-├── config/                # Configuration files
+├── config/                # Fichiers de configuration
 │   ├── __init__.py  
-│   └── settings.py        # Drone settings (speed, window size, etc.)
+│   └── settings.py        # Paramètres du drone (vitesse, taille de la fenêtre, etc.)
 │
-│
-├── drone_controller/           # Drone-specific logic
+├── drone_controller/      # Logique spécifique au drone
 │   ├── __init__.py             
-│   ├── drone.py                # Core drone control class
-│   ├── flying_modes.py         # Different modes (Autonomous, Manual)
-│   ├── keyboard_control.py     # Keyboard listening for manual mode
-│   ├── movement.py             # Movement-related methods (up, down, left, right, recalibration)
-│   ├── targeting.py            # Targeting logic (for flying through doors, face following, etc.) 
-│   └── vision.py               # Image processing and face detection logic
+│   ├── drone.py           # Classe principale de contrôle du drone
+│   ├── flying_modes.py    # Différents modes (Autonome, Manuel)
+│   ├── keyboard_control.py# Contrôle par clavier pour le mode manuel
+│   ├── movement.py        # Méthodes de mouvement (haut, bas, gauche, droite, recalibration)
+│   ├── targeting.py       # Logique de ciblage (pour passer à travers des portes, suivi de visage, etc.) 
+│   └── vision.py          # Traitement d'image et détection de visage
 │
+├── resources/             # Ressources externes (e.g., fichiers XML, classificateurs en cascade)
+│   ├── runs/              # Dossier contenant les différents modèles de detection pour cercle et hexagones 
+│   └── detect_profil.xml  # Fichier XML de détection de visage
 │
-├── resources/             # External resources (e.g., XML files, cascade classifiers)
-│   └── detect_profil.xml  # Face detection XML file
+├── tests/                 # Tests unitaires pour le projet
+│   ├── test_movement.py   # Tests pour la logique de mouvement
+│   ├── test_vision.py     # Tests pour le traitement de vision
+│   └── test_battery.py    # Tests pour la gestion de la batterie
 │
+├── utils/                 # Fonctions utilitaires
+│   ├── battery.py         # Gestion de la batterie
+│   ├── pygame.py          # Gestion de l'écran
+│   └── logging.py         # Stockage des déplacements du drone
 │
-├── tests/                 # Unit tests for your project
-│   ├── test_movement.py   # Tests for movement logic
-│   ├── test_vision.py     # Tests for vision processing
-│   └── test_battery.py    # Tests for battery handling
-│
-│
-├── utils/                  # Utility functions
-│   ├── battery.py          # Battery management
-│   ├── pygame.py           # Screen management
-│   └── logging.py          # Stockage des deplacements du drone
-│
-│
-└── README.md              # Project documentation
-
+└── README.md              # Documentation du projet
+```
