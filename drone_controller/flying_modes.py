@@ -1,6 +1,6 @@
 from drone_controller.keyboard_control import Keyboard
 from math import sqrt
-from config.settings import TARGET_DIST, DEAD_ZONE, MOVE_RATIO,SCREEN_WIDTH, DEAD_ZONE_SCAN
+from config.settings import TARGET_DIST, DEAD_ZONE, MOVE_RATIO,SCREEN_WIDTH, DEAD_ZONE_SCAN, STARTING_DRONE_HEIGHT, MAX_GATES_PASSED
 import time
 
 class IdleMode:
