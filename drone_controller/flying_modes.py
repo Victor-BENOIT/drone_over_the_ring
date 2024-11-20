@@ -1,6 +1,7 @@
 from drone_controller.keyboard_control import Keyboard
 from math import sqrt
-from config.settings import TARGET_DIST, DEAD_ZONE, MOVE_RATIO, SCREEN_WIDTH, DEAD_ZONE_SCAN, MAX_GATES_PASSED, STARTING_DRONE_HEIGHT
+from config.settings import TARGET_DIST, DEAD_ZONE, MOVE_RATIO,SCREEN_WIDTH, DEAD_ZONE_SCAN
+import time
 
 class IdleMode:
     """
@@ -250,58 +251,98 @@ class ScanMode:
 
     def __init__(self, controller):
         """
-        Initialise la classe ScanMode avec le contrôleur du drone.
+        Initialise une instance de ScanMode avec un contrôleur donné.
 
-        Args:
-            controller: Le contrôleur du drone.
+        Paramètres:
+            controller (Controller): Le contrôleur qui gère le drone (tello) et les systèmes de vision.
+
+        Attributs:
+            controller (Controller): Le contrôleur du drone.
+            tello (Tello): Instance de drone associée au contrôleur.
+            vision (Vision): Système de vision pour la détection de distance et de portes.
+            angle (int): L'angle actuel de rotation pour le scan.
+            increment (int): La valeur d'incrémentation de l'angle de rotation.
+            detected_doors_list (list): Liste contenant les informations des portes détectées.
         """
         self.controller = controller
         self.tello = controller.tello
-        self.vision = controller.vision
-        self.angle = 0
-        self.increment = 10
-        self.detected_doors_list = []
+        self.vision = controller.vision  # Utilise la classe Vision qui contient `distance` et `door`
+        self.angle = 0  # Attribut pour suivre l'angle
+        self.increment = 10  # Incrément de rotation
+        self.detected_doors_list = []  # Liste pour stocker toutes les portes détectées
+        self.angle_porte = 0
 
     def start(self):
-        """Active le mode Scan et ajuste la hauteur du drone pour le scan."""
+        """
+        Démarre le mode Scan en prenant le contrôle du drone. Si le drone n'est pas en vol,
+        il décolle et s'élève jusqu'à une hauteur de 120 cm.
+        
+        Cette méthode doit être appelée pour lancer la procédure de scan.
+        """
         print("Mode Scan activé.")
         if not self.controller.is_flying():
             self.controller.takeoff()
         while self.tello.get_height() < 120:
             self.controller.movement.move_up(50)
 
-    def rotate_360(self):
-        """Effectue une rotation complète à 360 degrés."""
-        print("Début de la rotation à 360 degrés")
-
     def detect_door(self):
-        """Détecte les portes en fonction de la distance et de la position dans le champ de vision."""
+        """
+        Détecte les portes visibles dans le champ de vision du drone.
+        Si des portes sont détectées par le système de vision (et qu'elles se trouvent
+        dans une certaine distance et zone définie), les informations de chaque porte
+        sont enregistrées, incluant la distance, l'angle de détection et le type de porte.
+        Les portes détectées sont ajoutées à `detected_doors_list`.
+        """
         if self.vision.gates:
-            x, _, w, _, _, type = self.vision.gates[0]
+            x, _, w, h, _, type = self.vision.gates[0]  # Coordonnée x de la première porte détectée
+            
             if (
                 self.vision.distance is not None 
                 and ((SCREEN_WIDTH / 2 - DEAD_ZONE_SCAN) < (x + w / 2) < (SCREEN_WIDTH / 2 + DEAD_ZONE_SCAN))
             ):
+                    # Calcul de l'angle de la porte
+                ratio = w / h
+                max_angle = 90  # Définir l'angle maximum possible
+                self.angle_porte = max(0, min(max_angle, (1 - ratio) * max_angle)) * 2
+                
                 self.detected_door = {
                     "distance": self.vision.distance,
-                    "angle": self.angle / 1.25,
+                    "angle camera": self.angle / 1.25,
+                    "angle porte": self.angle_porte,
                     "porte": type
                 }
-                print(f"GOOD - Porte: {type}, Distance: {self.vision.distance}, Angle: {self.angle / 1.25}")
+                print(f"GOOD - Porte: {type}, Distance: {self.vision.distance}, Angle camera: {self.angle / 1.25}")
                 self.detected_doors_list.append(self.detected_door)
                 print(self.detected_doors_list)
 
     def main_loop(self):
-        """Boucle principale de scan, effectuant une rotation et une détection de porte."""
-        if self.angle < 220:
+        """
+        Exécute la boucle principale pour le scan à 360 degrés.
+
+        Cette méthode est conçue pour être appelée régulièrement pour faire progresser le scan.
+        À chaque incrément de rotation (par défaut 10 degrés), elle tente de détecter une porte.
+        
+        Si un tour complet de 360 degrés est atteint, elle arrête le drone.
+        """
+        if self.angle < (180 * 1.25):
             self.tello.rotate_clockwise(self.increment)
             self.angle += self.increment
             self.detect_door()
         else:
             print("Rotation à 360 degrés terminée")
             self.stop()
+            self.stop()
 
     def stop(self):
-        """Arrête le mode Scan en atterrissant le drone s'il est en vol."""
+        """
+        Arrête le mode Scan et fait atterrir le drone si celui-ci est en vol.
+
+        Cette méthode termine la procédure de scan et ramène le drone au sol.
+        """
         if self.controller.is_flying():
             self.controller.land()
+
+
+
+
+    

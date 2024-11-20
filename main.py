@@ -26,7 +26,7 @@ def start_drone_control():
         drone.mode.main_loop()
 
     pygame_thread.join()
-
+    
     drone.mode.stop()
 
 if __name__ == "__main__":
