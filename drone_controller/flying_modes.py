@@ -103,6 +103,10 @@ class AutonomousMode:
         self.locked_distance = False
         self.gates_passed = 0
         self.angle = 0
+        self.detected_doors_list = {}
+        # self.increment = 10 * 1.25
+        # self.rotating = False
+        # self.dir_rotation = None
 
     def start(self):
         """Active le mode autonome, décolle le drone et ajuste sa hauteur."""
@@ -117,10 +121,16 @@ class AutonomousMode:
             self.controller.land()
             return
         
-        print(self.vision.gates)
+        # print(self.vision.gates)
+    
+        # if self.rotating:
+        #     self.sweeping_for_gates()
+        #     return
 
         if self.locked_horizontal and self.locked_vertical and self.locked_distance:
             self.controller.movement.cross_gate(int(self.vision.distance), self.vision.gates[0][5])
+            # self.dir_rotation = self.vision.gates[0][5]
+            # self.rotating = True
             self.gates_passed += 1
         else:
             self.horizontal_vertical_tracking()
@@ -195,45 +205,58 @@ class AutonomousMode:
                 self.locked_distance = False
 
 
-    def sweeping_for_gates(self, type):
-        """Effectue une rotation complète à 90deg pour détecter les portes."""
-        if self.angle < 90:
-            if type == "hex":
-                self.tello.rotate_counter_clockwise(self.increment)
-            elif type == "hoop":
-                self.tello.rotate_clockwise(self.increment)
-            self.angle += self.increment
-            self.detect_door()
-        elif self.angle >= 90:
-            print(self.vision.detected_doors_list)
-            if self.detected_doors_list:
-                closest_door = min(self.detected_doors_list, key=lambda door: door["distance"])
-                print(f"Porte la plus proche: {closest_door['porte']}, Distance: {closest_door['distance']}, Angle: {closest_door['angle']}")
-                angle_to_rotate = closest_door["angle"] - self.angle
-                if angle_to_rotate > 0:
-                    self.tello.rotate_clockwise(angle_to_rotate)
-                else:
-                    self.tello.rotate_counter_clockwise(abs(angle_to_rotate))
-                self.angle = closest_door["angle"]
-            else:
-                self.controller.land()
+    def sweeping_for_gates(self):
+        if self.dir_rotation == "hoop":
+            self.tello.rotate_clockwise(self.increment)
+        elif self.dir_rotation == "hex":
+            self.tello.rotate_counter_clockwise(self.increment)
+        self.angle += self.increment
 
-    def detect_door(self):
-        """Détecte les portes en fonction de la distance et de la position dans le champ de vision."""
-        if self.vision.gates:
-            x, _, w, _, _, type = self.vision.gates[0]
-            if (
-                self.vision.distance is not None 
-                and ((SCREEN_WIDTH / 2 - DEAD_ZONE_SCAN) < (x + w / 2) < (SCREEN_WIDTH / 2 + DEAD_ZONE_SCAN))
-            ):
-                self.detected_door = {
-                    "distance": self.vision.distance,
-                    "angle": self.angle / 1.25,
-                    "porte": type
-                }
-                print(f"GOOD - Porte: {type}, Distance: {self.vision.distance}, Angle: {self.angle / 1.25}")
-                self.detected_doors_list.append(self.detected_door)
-                print(self.detected_doors_list)
+        if self.angle >= 110:
+            self.rotating = False
+            self.angle = 0
+            self.dir_rotation = None
+
+    # def sweeping_for_gates(self, type):
+    #     """Effectue une rotation complète à 90deg pour détecter les portes."""
+    #     if self.angle < 90:
+    #         if type == "hex":
+    #             self.tello.rotate_counter_clockwise(self.increment)
+    #             print("angle : " + self.angle)
+    #         elif type == "hoop":
+    #             self.tello.rotate_clockwise(self.increment)
+    #             print("angle : " + self.angle)
+    #         self.angle += self.increment
+    #         self.detect_door()
+    #     elif self.angle >= 90:
+    #         print(self.detected_doors_list)
+    #         if self.detected_doors_list:
+    #             closest_door = min(self.detected_doors_list, key=lambda door: door["distance"])
+    #             print(f"Porte la plus proche: {closest_door['porte']}, Distance: {closest_door['distance']}, Angle: {closest_door['angle']}")
+    #             angle_to_rotate = closest_door["angle"] - self.angle
+    #             if angle_to_rotate > 0:
+    #                 self.tello.rotate_clockwise(angle_to_rotate)
+    #             else:
+    #                 self.tello.rotate_counter_clockwise(abs(angle_to_rotate))
+    #             self.angle = closest_door["angle"]
+    #         else:
+    #             self.controller.land()
+
+    # def detect_door(self):
+    #     """Détecte les portes en fonction de la distance et de la position dans le champ de vision."""
+    #     if self.vision.gates:
+    #         x, _, w, _, _, type = self.vision.gates[0]
+    #         if (
+    #             self.vision.distance is not None 
+    #             and ((SCREEN_WIDTH / 2 - DEAD_ZONE_SCAN) < (x + w / 2) < (SCREEN_WIDTH / 2 + DEAD_ZONE_SCAN))
+    #         ):
+    #             self.detected_door = {
+    #                 "distance": self.vision.distance,
+    #                 "angle": self.angle / 1.25,
+    #                 "porte": type
+    #             }
+    #             print(f"GOOD - Porte: {type}, Distance: {self.vision.distance}, Angle: {self.angle / 1.25}")
+    #             self.detected_doors_list.append(self.detected_door)
 
 
 class ScanMode:
