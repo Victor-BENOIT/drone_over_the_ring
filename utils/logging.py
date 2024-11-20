@@ -2,14 +2,33 @@ from config.settings import LOGGING_ENABLED
 import os
 
 class Logging:
+    """
+    Classe de journalisation des mouvements du drone.
+
+    Attributes:
+        movements: Liste des mouvements enregistrés.
+        filename: Nom du fichier de log.
+    """
+
     def __init__(self):
+        """
+        Initialise l'instance de journalisation, crée un fichier de log si LOGGING_ENABLED est activé.
+        Supprime tout fichier de log existant si LOGGING_ENABLED est désactivé.
+        """
         self.movements = []
-        self.filename = 'log.txt'
+        self.filename = os.path.join(os.path.dirname(__file__), 'log.txt')
         if not LOGGING_ENABLED:
             if os.path.exists(self.filename):
                 os.remove(self.filename)
 
     def add_movement(self, direction, value):
+        """
+        Ajoute un mouvement à la liste si la direction est valide et LOGGING_ENABLED est activé.
+
+        Args:
+            direction: La direction du mouvement, doit être parmi ['up', 'down', 'right', 'left', 'forward', 'backward', 'rotate_clockwise', 'rotate_counter_clockwise'].
+            value: La valeur du mouvement (par exemple, la distance ou l'angle).
+        """
         if not LOGGING_ENABLED:
             return
         if direction in ['up', 'down', 'right', 'left', 'forward', 'backward', 'rotate_clockwise', 'rotate_counter_clockwise']:
@@ -18,6 +37,12 @@ class Logging:
             print("Invalid direction. Must be one of 'up', 'down', 'right', 'left', 'forward', 'backward', 'rotate_clockwise', 'rotate_counter_clockwise'.")
         
     def add_gate_marker(self, gate_type):
+        """
+        Ajoute un marqueur de porte à la liste si le type de porte est valide et LOGGING_ENABLED est activé.
+
+        Args:
+            gate_type: Le type de porte, doit être parmi ['hoop', 'hex', 'square'].
+        """
         if not LOGGING_ENABLED:
             return
         if gate_type in ['hoop', 'hex', 'square']:
@@ -26,6 +51,9 @@ class Logging:
             print("Invalid gate type. Must be one of 'hoop', 'hex', 'square'.")
 
     def reduce_movements(self):
+        """
+        Réduit la liste des mouvements en combinant les mouvements consécutifs dans la même direction.
+        """
         reduced_movements = []
         if not self.movements:
             return reduced_movements
@@ -50,6 +78,9 @@ class Logging:
         self.movements = reduced_movements
 
     def save_logs(self):
+        """
+        Sauvegarde les mouvements réduits dans un fichier de log si LOGGING_ENABLED est activé.
+        """
         if not LOGGING_ENABLED:
             return
         self.reduce_movements()
