@@ -13,7 +13,7 @@ TAILLE_PIX = 5.08e-6  # Taille d'un pixel en mètres
 HAUTEUR_REELLE_VISAGE = 26e-2  # Hauteur réelle d'un visage en mètres
 HAUTEUR_REELLE_HOOP = 0.67 * 2.50 # Hauteur réelle d'un cercle en mètres // RAPPORT DE CORRECTION DE 2 ARBITRAIRE
 # La coefficient de HAUTEUR_REELLE_HOOP doit etre d'environ 2.50/2.75 
-HAUTEUR_REELLE_HEX_VERTICAL = 0.55 * 2.50
+HAUTEUR_REELLE_HEX_VERTICAL = 0.55 * 2.40
 HAUTEUR_REELLE_HEX_HORIZONTAL = 0.65 * 2.50
 #################################################################################################################
 #                                       Paramètres pour le modele de détection
