@@ -101,6 +101,9 @@ class AutonomousMode:
         self.locked_horizontal = False
         self.locked_vertical = False
         self.locked_distance = False
+        self.locked_avoidance_maneuver = False
+        self.up_maneuver = False
+        self.last_angles = []
         self.gates_passed = 0
         self.angle = 0
         self.detected_doors_list = {}
@@ -122,15 +125,10 @@ class AutonomousMode:
             return
         
         # print(self.vision.gates)
-    
-        # if self.rotating:
-        #     self.sweeping_for_gates()
-        #     return
-
-        if self.locked_horizontal and self.locked_vertical and self.locked_distance:
+        if self.locked_distance and self.locked_horizontal and self.locked_vertical and not self.locked_avoidance_maneuver:
+            self.avoidance_maneuver()
+        if self.locked_horizontal and self.locked_vertical and self.locked_distance and self.locked_avoidance_maneuver:
             self.controller.movement.cross_gate(int(self.vision.distance), self.vision.gates[0][5])
-            # self.dir_rotation = self.vision.gates[0][5]
-            # self.rotating = True
             self.gates_passed += 1
         else:
             self.horizontal_vertical_tracking()
@@ -204,18 +202,65 @@ class AutonomousMode:
                 self.controller.movement.move_backward(int(abs(distance_to_target * MOVE_RATIO)))
                 self.locked_distance = False
 
+    def avoidance_maneuver(self):
+        _, _, w, h, _, _ = self.vision.gates[0]
 
-    def sweeping_for_gates(self):
-        if self.dir_rotation == "hoop":
-            self.tello.rotate_clockwise(self.increment)
-        elif self.dir_rotation == "hex":
-            self.tello.rotate_counter_clockwise(self.increment)
-        self.angle += self.increment
+        # Ajout de la logique pour calculer l'angle de la porte
+        ratio = w / h
+        max_angle = 90  # Définir l'angle maximum possible
+        angle_porte = round(max(0, min(max_angle, (1 - ratio) * max_angle)) * 2, 2)
 
-        if self.angle >= 110:
-            self.rotating = False
-            self.angle = 0
-            self.dir_rotation = None
+        self.last_angles.append(angle_porte)
+
+        print("angle porte : " + str(angle_porte))
+
+        if angle_porte <= 4:
+            self.locked_avoidance_maneuver = True
+
+        if not self.locked_avoidance_maneuver:
+            if not self.up_maneuver:
+                self.controller.movement.move_up(25)
+                self.up_maneuver = True
+
+            # print(f"Distance atteinte. Rotation et déplacement gauche en cours...")
+
+            if len(self.last_angles) > 1:
+                if self.last_angles[-1] > self.last_angles[-2]:
+                    self.controller.movement.rotate_clockwise(10)
+                    # print("Rotation: 10°")
+                    self.controller.movement.move_left(24)
+                else:
+                    self.controller.movement.rotate_counter_clockwise(10)
+                    # print("Rotation: -10°")
+                    self.controller.movement.move_right(24)
+            else:
+                self.controller.movement.rotate_clockwise(10)
+                # print("Rotation: 10°")
+                self.controller.movement.move_left(24)
+                # print("Déplacement gauche: 24cm")
+
+            # Boucle pour rotation et déplacement
+            if angle_porte != 0:
+                self.controller.movement.rotate_clockwise(10)
+                # print("Rotation: 10°")
+
+                self.controller.movement.move_left(24)
+                # print("Déplacement gauche: 24cm")
+
+
+
+
+    # def sweeping_for_gates(self):
+    #     if self.dir_rotation == "hoop":
+    #         self.tello.rotate_clockwise(self.increment)
+    #     elif self.dir_rotation == "hex":
+    #         self.tello.rotate_counter_clockwise(self.increment)
+    #     self.angle += self.increment
+
+    #     if self.angle >= 110:
+    #         self.rotating = False
+    #         self.angle = 0
+    #         self.dir_rotation = None
 
     # def sweeping_for_gates(self, type):
     #     """Effectue une rotation complète à 90deg pour détecter les portes."""

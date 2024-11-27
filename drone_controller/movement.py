@@ -120,6 +120,9 @@ class Movement:
         self.controller.mode.locked_vertical = False
         self.controller.mode.locked_horizontal = False
         self.controller.mode.locked_distance = False
+        self.controller.mode.locked_avoidance_maneuver = False
+        self.controller.mode.up_maneuver = False
+        
 
         # self.sweeping_for_gates(type)
             

@@ -97,6 +97,7 @@ MOVE_CROSS_GATE = 50 # Distance de déplacement supplémentaire pour traverser l
 MOVE_RATIO = 0.6 # [0:1] Ratio de déplacement par rapport à la distance de la cible
 DEAD_ZONE = 10 # Zone morte pour le déplacement en cm
 
+
 MAX_GATES_PASSED = 1 # Nombre de portes à passer
 
 DEAD_ZONE_SCAN = 65 #dead zoen pour centrer la porte pendant le balleyage 
