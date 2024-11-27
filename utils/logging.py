@@ -83,7 +83,7 @@ class Logging:
         """
         if not LOGGING_ENABLED:
             return
-        self.reduce_movements()
+        # self.reduce_movements()
         with open(self.filename, 'w') as file:
             for direction, value in self.movements:
                 file.write(f"{direction} {value}\n")

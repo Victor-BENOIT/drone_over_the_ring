@@ -111,6 +111,7 @@ class Movement:
         """
         self.logging.add_gate_marker(type)
         self.tello.move_forward(distance + MOVE_CROSS_GATE)
+        self.logging.add_movement('forward', distance + MOVE_CROSS_GATE)
         if type == "hoop":
             self.rotate_clockwise(110)
         elif type == "hex":
