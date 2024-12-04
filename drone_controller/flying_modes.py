@@ -1,6 +1,6 @@
 from drone_controller.keyboard_control import Keyboard
 from math import sqrt
-from config.settings import TARGET_DIST, DEAD_ZONE, MOVE_RATIO,SCREEN_WIDTH, DEAD_ZONE_SCAN, STARTING_DRONE_HEIGHT,MAX_GATES_PASSED
+from config.settings import TARGET_DIST, DEAD_ZONE, MOVE_RATIO,SCREEN_WIDTH, DEAD_ZONE_SCAN, STARTING_DRONE_HEIGHT, MAX_GATES_PASSED
 import time
 
 class IdleMode:
@@ -101,7 +101,15 @@ class AutonomousMode:
         self.locked_horizontal = False
         self.locked_vertical = False
         self.locked_distance = False
+        self.locked_avoidance_maneuver = False
+        self.up_maneuver = False
+        self.last_angles = []
         self.gates_passed = 0
+        self.angle = 0
+        self.detected_doors_list = {}
+        # self.increment = 10 * 1.25
+        # self.rotating = False
+        # self.dir_rotation = None
 
     def start(self):
         """Active le mode autonome, décolle le drone et ajuste sa hauteur."""
@@ -116,9 +124,10 @@ class AutonomousMode:
             self.controller.land()
             return
         
-        print(self.vision.gates)
-
-        if self.locked_horizontal and self.locked_vertical and self.locked_distance:
+        # print(self.vision.gates)
+        if self.locked_distance and self.locked_horizontal and self.locked_vertical and not self.locked_avoidance_maneuver:
+            self.avoidance_maneuver()
+        if self.locked_horizontal and self.locked_vertical and self.locked_distance and self.locked_avoidance_maneuver:
             self.controller.movement.cross_gate(int(self.vision.distance), self.vision.gates[0][5])
             self.gates_passed += 1
         else:
@@ -192,6 +201,108 @@ class AutonomousMode:
             else:
                 self.controller.movement.move_backward(int(abs(distance_to_target * MOVE_RATIO)))
                 self.locked_distance = False
+
+    def avoidance_maneuver(self):
+        _, _, w, h, _, _ = self.vision.gates[0]
+
+        # Ajout de la logique pour calculer l'angle de la porte
+        ratio = w / h
+        max_angle = 90  # Définir l'angle maximum possible
+        angle_porte = round(max(0, min(max_angle, (1 - ratio) * max_angle)) * 2, 2)
+
+        self.last_angles.append(angle_porte)
+
+        print("angle porte : " + str(angle_porte))
+
+        if angle_porte <= 4:
+            self.locked_avoidance_maneuver = True
+
+        if not self.locked_avoidance_maneuver:
+            if not self.up_maneuver:
+                self.controller.movement.move_up(25)
+                self.up_maneuver = True
+
+            # print(f"Distance atteinte. Rotation et déplacement gauche en cours...")
+
+            if len(self.last_angles) > 1:
+                if self.last_angles[-1] > self.last_angles[-2]:
+                    self.controller.movement.rotate_clockwise(10)
+                    # print("Rotation: 10°")
+                    self.controller.movement.move_left(24)
+                else:
+                    self.controller.movement.rotate_counter_clockwise(10)
+                    # print("Rotation: -10°")
+                    self.controller.movement.move_right(24)
+            else:
+                self.controller.movement.rotate_clockwise(10)
+                # print("Rotation: 10°")
+                self.controller.movement.move_left(24)
+                # print("Déplacement gauche: 24cm")
+
+            # Boucle pour rotation et déplacement
+            if angle_porte != 0:
+                self.controller.movement.rotate_clockwise(10)
+                # print("Rotation: 10°")
+
+                self.controller.movement.move_left(24)
+                # print("Déplacement gauche: 24cm")
+
+
+
+
+    # def sweeping_for_gates(self):
+    #     if self.dir_rotation == "hoop":
+    #         self.tello.rotate_clockwise(self.increment)
+    #     elif self.dir_rotation == "hex":
+    #         self.tello.rotate_counter_clockwise(self.increment)
+    #     self.angle += self.increment
+
+    #     if self.angle >= 110:
+    #         self.rotating = False
+    #         self.angle = 0
+    #         self.dir_rotation = None
+
+    # def sweeping_for_gates(self, type):
+    #     """Effectue une rotation complète à 90deg pour détecter les portes."""
+    #     if self.angle < 90:
+    #         if type == "hex":
+    #             self.tello.rotate_counter_clockwise(self.increment)
+    #             print("angle : " + self.angle)
+    #         elif type == "hoop":
+    #             self.tello.rotate_clockwise(self.increment)
+    #             print("angle : " + self.angle)
+    #         self.angle += self.increment
+    #         self.detect_door()
+    #     elif self.angle >= 90:
+    #         print(self.detected_doors_list)
+    #         if self.detected_doors_list:
+    #             closest_door = min(self.detected_doors_list, key=lambda door: door["distance"])
+    #             print(f"Porte la plus proche: {closest_door['porte']}, Distance: {closest_door['distance']}, Angle: {closest_door['angle']}")
+    #             angle_to_rotate = closest_door["angle"] - self.angle
+    #             if angle_to_rotate > 0:
+    #                 self.tello.rotate_clockwise(angle_to_rotate)
+    #             else:
+    #                 self.tello.rotate_counter_clockwise(abs(angle_to_rotate))
+    #             self.angle = closest_door["angle"]
+    #         else:
+    #             self.controller.land()
+
+    # def detect_door(self):
+    #     """Détecte les portes en fonction de la distance et de la position dans le champ de vision."""
+    #     if self.vision.gates:
+    #         x, _, w, _, _, type = self.vision.gates[0]
+    #         if (
+    #             self.vision.distance is not None 
+    #             and ((SCREEN_WIDTH / 2 - DEAD_ZONE_SCAN) < (x + w / 2) < (SCREEN_WIDTH / 2 + DEAD_ZONE_SCAN))
+    #         ):
+    #             self.detected_door = {
+    #                 "distance": self.vision.distance,
+    #                 "angle": self.angle / 1.25,
+    #                 "porte": type
+    #             }
+    #             print(f"GOOD - Porte: {type}, Distance: {self.vision.distance}, Angle: {self.angle / 1.25}")
+    #             self.detected_doors_list.append(self.detected_door)
+
 
 class ScanMode:
     """

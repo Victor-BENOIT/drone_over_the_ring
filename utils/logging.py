@@ -3,7 +3,7 @@ import os
 
 class Logging:
     """
-    Classe de journalisation des mouvements du drone.
+    Classe de logging des mouvements du drone.
 
     Attributes:
         movements: Liste des mouvements enregistrés.
@@ -12,7 +12,7 @@ class Logging:
 
     def __init__(self):
         """
-        Initialise l'instance de journalisation, crée un fichier de log si LOGGING_ENABLED est activé.
+        Initialise l'instance de logging, crée un fichier de log si LOGGING_ENABLED est activé.
         Supprime tout fichier de log existant si LOGGING_ENABLED est désactivé.
         """
         self.movements = []
@@ -83,7 +83,7 @@ class Logging:
         """
         if not LOGGING_ENABLED:
             return
-        self.reduce_movements()
+        # self.reduce_movements()
         with open(self.filename, 'w') as file:
             for direction, value in self.movements:
                 file.write(f"{direction} {value}\n")

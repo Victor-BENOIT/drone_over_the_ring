@@ -1,4 +1,4 @@
-from config.settings import DRONE_DIST, MOVE_CROSS_GATE
+from config.settings import DRONE_DIST, MOVE_CROSS_GATE, SCREEN_WIDTH, DEAD_ZONE_SCAN
 
 class Movement:
     """
@@ -111,6 +111,7 @@ class Movement:
         """
         self.logging.add_gate_marker(type)
         self.tello.move_forward(distance + MOVE_CROSS_GATE)
+        self.logging.add_movement('forward', distance + MOVE_CROSS_GATE)
         if type == "hoop":
             self.rotate_clockwise(110)
         elif type == "hex":
@@ -119,3 +120,23 @@ class Movement:
         self.controller.mode.locked_vertical = False
         self.controller.mode.locked_horizontal = False
         self.controller.mode.locked_distance = False
+        self.controller.mode.locked_avoidance_maneuver = False
+        self.controller.mode.up_maneuver = False
+        
+
+        # self.sweeping_for_gates(type)
+            
+    
+    # def sweeping_for_gates(self, type):
+    #     increment = 10
+    #     x, _, w, _, _, type = self.controller.vision.gates[0]
+    #     if type == "hoop":
+    #         self.rotate_clockwise(increment)
+    #         if self.vision.distance is not None and ((SCREEN_WIDTH / 2 - DEAD_ZONE_SCAN) < (x + w / 2) < (SCREEN_WIDTH / 2 + DEAD_ZONE_SCAN)):
+    #             return
+    #         else:
+    #             self.sweeping_for_gates(self.type)
+    #     elif type == "hex":
+    #         self.rotate_counter_clockwise(increment)
+    #     angle += increment
+        

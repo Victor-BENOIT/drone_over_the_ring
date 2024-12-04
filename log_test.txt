@@ -1,0 +1,14 @@
+up 60
+down 20
+forward 31
+down 20
+forward 20
+GATE_IN_FRONT hex
+forward 40
+rotate_counter_clockwise 110
+forward 60
+forward 28
+forward 20
+GATE_IN_FRONT hoop
+forward 40
+rotate_clockwise 110
