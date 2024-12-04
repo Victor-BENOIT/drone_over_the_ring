@@ -3,6 +3,10 @@ import re
 from djitellopy import Tello
 import time
 
+CONNECT_DRONE = True
+POIDS_RECTIFICATION = True
+LOG_PATH = "log.txt"
+
 class DroneInterface:
     def __init__(self, log_path):
         self.log_path = log_path
@@ -21,7 +25,8 @@ class DroneInterface:
         self.console = Console(20, 0, self.screen_width - 40, 0, self.font)
         
         self.donnees_sommees = []
-        self.tello = Tello()
+        if CONNECT_DRONE:
+            self.tello = Tello()
 
         # Button properties
         self.bouton_x, self.bouton_y = 300, 500
@@ -37,7 +42,18 @@ class DroneInterface:
                 line = line.strip()
                 if re.match(r'^(up|down|forward|backward|left|right|rotate_counter_clockwise|rotate_clockwise) \d+', line):
                     mouvement, valeur = line.split()
-                    self.donnees.append([mouvement, int(valeur), None])
+                    valeur = int(valeur)
+
+                    # Appliquer la rectification si nécessaire
+                    if POIDS_RECTIFICATION:
+                        if mouvement == "forward":
+                            valeur = int(valeur * 0.5)
+                        if mouvement == "up":
+                            valeur = int(valeur * 0.5)
+
+                    # Ajouter la version modifiée
+                    self.donnees.append([mouvement, valeur, None])
+
                 elif line.startswith("GATE_IN_FRONT"):
                     _, gate_type = line.split()
                     self.donnees.append(["GATE_IN_FRONT", None, gate_type])
@@ -55,12 +71,15 @@ class DroneInterface:
             rotations = somme_actuelle["rotate_counter_clockwise"] - somme_actuelle["rotate_clockwise"]
 
             valeurs_temp = []
+            if forward_backward != 0:
+                valeurs_temp.append(["forward" if forward_backward > 0 else "backward", abs(forward_backward), None])
+                if POIDS_RECTIFICATION and forward_backward > 0:  # Applique uniquement si RECTIFICATION est activé et forward > 0
+                    up_down -= abs(forward_backward) // 4.5
+                    up_down = int(up_down)
             if up_down != 0:
                 valeurs_temp.append(["up" if up_down > 0 else "down", abs(up_down), None])
             if left_right != 0:
                 valeurs_temp.append(["left" if left_right > 0 else "right", abs(left_right), None])
-            if forward_backward != 0:
-                valeurs_temp.append(["forward" if forward_backward > 0 else "backward", abs(forward_backward), None])
             if rotations != 0:
                 valeurs_temp.append(["rotate_counter_clockwise" if rotations > 0 else "rotate_clockwise", abs(rotations), None])
 
@@ -107,6 +126,11 @@ class DroneInterface:
         }
 
         for mouvement in self.donnees_sommees:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.console.add_message("Fenêtre fermée, atterrissage d'urgence !")
+                    self.tello.land()
+                    return
             if mouvement[0] == "GATE_IN_FRONT":
                 message = f"Porte détectée: {mouvement[2]}"
                 self.console.add_message(message)
@@ -167,7 +191,8 @@ class DroneInterface:
     def run(self):
         """Boucle principale de l'application."""
         try:
-            self.tello.connect()
+            if CONNECT_DRONE:
+                self.tello.connect()
             self.lecture_log()
             self.compense_mouvements()
 
@@ -177,21 +202,22 @@ class DroneInterface:
                     if event.type == pygame.QUIT:
                         running = False
                     elif event.type == pygame.MOUSEBUTTONDOWN:
-                        mouse_x, mouse_y = event.pos
-                        if (self.bouton_x <= mouse_x <= self.bouton_x + self.bouton_width and
-                            self.bouton_y <= mouse_y <= self.bouton_y + self.bouton_height and not self.bouton_clique):
-                            self.bouton_clique = True
-                            self.bouton_etat = "En vol"
-                            self.bouton_color = (70, 70, 70)
-                            self.dessiner_bouton(self.bouton_x, self.bouton_y, self.bouton_width, self.bouton_height)
-                            self.console.add_message("Décollage initié !")
-                            self.console.draw(self.screen)
-                            self.tello.takeoff()
-                            self.execute_mouvements()
-                            self.tello.land()
-                            self.console.add_message("Atterrissage effectué !")
-                            self.bouton_etat = "Manoeuvre  terminée"
-                            self.dessiner_bouton(self.bouton_x, self.bouton_y, self.bouton_width, self.bouton_height)
+                        if CONNECT_DRONE:
+                            mouse_x, mouse_y = event.pos
+                            if (self.bouton_x <= mouse_x <= self.bouton_x + self.bouton_width and
+                                self.bouton_y <= mouse_y <= self.bouton_y + self.bouton_height and not self.bouton_clique):
+                                self.bouton_clique = True
+                                self.bouton_etat = "En vol"
+                                self.bouton_color = (70, 70, 70)
+                                self.dessiner_bouton(self.bouton_x, self.bouton_y, self.bouton_width, self.bouton_height)
+                                self.console.add_message("Décollage initié !")
+                                self.console.draw(self.screen)
+                                self.tello.takeoff()
+                                self.execute_mouvements()
+                                self.tello.land()
+                                self.console.add_message("Atterrissage effectué !")
+                                self.bouton_etat = "Manoeuvre  terminée"
+                                self.dessiner_bouton(self.bouton_x, self.bouton_y, self.bouton_width, self.bouton_height)
 
 
                 self.screen.fill((40, 40, 40))
@@ -202,7 +228,8 @@ class DroneInterface:
                 pygame.display.flip()
                 self.clock.tick(10)
         finally:
-            self.tello.end()
+            if CONNECT_DRONE:
+                self.tello.end()
             pygame.quit()
 
 
@@ -235,5 +262,5 @@ class Console:
 
 
 if __name__ == "__main__":
-    interface = DroneInterface("log_test.txt")
+    interface = DroneInterface(LOG_PATH)
     interface.run()
