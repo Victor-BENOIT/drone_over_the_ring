@@ -16,7 +16,7 @@ class Logging:
         Supprime tout fichier de log existant si LOGGING_ENABLED est désactivé.
         """
         self.movements = []
-        self.filename = os.path.join(os.path.dirname(__file__), 'log.txt')
+        self.filename = 'log.txt'
         if not LOGGING_ENABLED:
             if os.path.exists(self.filename):
                 os.remove(self.filename)

@@ -1,6 +1,6 @@
 from drone_controller.keyboard_control import Keyboard
 from math import sqrt
-from config.settings import TARGET_DIST, DEAD_ZONE, MOVE_RATIO,SCREEN_WIDTH, DEAD_ZONE_SCAN
+from config.settings import TARGET_DIST, DEAD_ZONE, MOVE_RATIO,SCREEN_WIDTH, DEAD_ZONE_SCAN, STARTING_DRONE_HEIGHT,MAX_GATES_PASSED
 import time
 
 class IdleMode:
@@ -281,13 +281,17 @@ class ScanMode:
         
         Si un tour complet de 360 degrés est atteint, elle arrête le drone.
         """
+        # Vérifie si le drone est toujours en vol
+        if not self.controller.is_flying():
+            print("Le drone a atterri. Arrêt du programme.")
+            return  # Quitte la méthode si le drone est au sol
+        
         if self.angle < (180 * 1.25):
             self.tello.rotate_clockwise(self.increment)
             self.angle += self.increment
             self.detect_door()
         else:
             print("Rotation à 360 degrés terminée")
-            self.stop()
             self.stop()
 
     def stop(self):
@@ -296,8 +300,24 @@ class ScanMode:
 
         Cette méthode termine la procédure de scan et ramène le drone au sol.
         """
+        self.save_detected_doors()
         if self.controller.is_flying():
             self.controller.land()
+    
+    def save_detected_doors(self):
+        """
+        Sauvegarde la liste des portes détectées dans un fichier texte.
+
+        Le fichier est nommé 'detected_doors.txt' et est généré dans le répertoire courant.
+        """
+        filename = "detected_doors.txt"
+        try:
+            with open(filename, "w") as file:
+                for door in self.detected_doors_list:
+                    file.write(f"{door}\n")
+            print(f"Les portes détectées ont été sauvegardées dans '{filename}'.")
+        except Exception as e:
+            print(f"Erreur lors de la sauvegarde des portes détectées: {e}")
 
 
 
