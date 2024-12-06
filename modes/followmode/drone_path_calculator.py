@@ -4,6 +4,7 @@ import math
 
 LOG_PATH = "modes/followmode/log_test_curve.txt"
 DRONE_ACTIVATED = False
+AVERAGE_STRATING_HEIGHT = 110
 
 class DronePathCalculator:
     def __init__(self, log_path):
@@ -13,9 +14,10 @@ class DronePathCalculator:
         self.coordonnees_porte = (None, None, None)
         self.gate_types = []
         self.angle = 90 #cartésiennes
-        self.data = [
-            ["point", [(0, 0, 0)]]
+        self.coord_cart = [
+            ["point", [(0, 0, AVERAGE_STRATING_HEIGHT)]]
             ]
+        self.gates_cart = []
         if DRONE_ACTIVATED:
             self.tello = Tello()
 
@@ -68,62 +70,47 @@ class DronePathCalculator:
             x, y, z = coord
             print(f"Coordonnées relatives avant la porte {self.gate_types[i]}: x={x}, y={y}, z={z}")
 
-    def effectuer_mouvement(self, position_porte, gate_type):
-        x_target, y_target, z_target = position_porte
+    def creation_path_cartesien(self):
 
-        dist = self.calculer_distance(x_target, y_target, z_target, 0, 0, 0)
+        for i, coord in enumerate(self.matrice_coordonnees):
+            gate_type = self.gate_types[i]
 
-        # Calcul du point du milieu
-        x_middle = int((x_target) / 2)
-        y_middle = int((y_target) / 2)
-        z_middle = int((z_target) / 2 + int(dist / 20))
+            x_target, y_target, z_target = coord
 
-        # Ajout des coordonnées cartésiennes
-        self.ajout_coordonnees_cartesiennes(
-            "curve", 
-            coord_middle=(x_middle, y_middle, z_middle), 
-            coord_target=(x_target, y_target, z_target))
-        
+            dist = self.calculer_distance(x_target, y_target, z_target, 0, 0, 0)
 
-        self.ajout_coordonnees_cartesiennes(
-            "straight line", 
-            axe="x", 
-            distance=150)
-        
-        if gate_type == "hex":
-            self.angle += 90
-        elif gate_type == "hoop":
-            self.angle -= 90
+            # Calcul du point du milieu
+            x_middle = int((x_target) / 2)
+            y_middle = int((y_target) / 2)
+            z_middle = int((z_target) / 2 + int(dist / 20))
 
-        if DRONE_ACTIVATED:
-            vitesse = 60
-
-            print(f"Coordonnées de la target: x={x_target}, y={y_target}, z={z_target}")
-            print(f"Coordonnées du point du milieu: x={x_middle}, y={y_middle}, z={z_middle}")
-
-            # 1. Déplacement vers le point du milieu
-            self.tello.curve_xyz_speed(x_middle, y_middle, z_middle, x_target, y_target, z_target, vitesse)
-
-            # 2. Avancer de 150
-            self.tello.move_forward(150)
-
-            # 3. Tourner à gauche ou à droite de 110° selon le type de porte
+            # Ajout des coordonnées cartésiennes
+            self.ajout_coordonnees_cartesiennes(
+                "curve", 
+                coord_middle=(x_middle, y_middle, z_middle), 
+                coord_target=(x_target, y_target, z_target))
+            
+            self.ajout_gate_cartesien(gate_type)
+            
+            self.ajout_coordonnees_cartesiennes(
+                "straight line", 
+                axe="x", 
+                distance = 150)
+            
             if gate_type == "hex":
-                self.tello.rotate_counter_clockwise(110)
+                self.angle += 90
             elif gate_type == "hoop":
-                self.tello.rotate_clockwise(110)
-
-
+                self.angle -= 90
 
     def ajout_coordonnees_cartesiennes(self, type_mouvement, coord_middle=None, coord_target=None, axe=None, distance=None):
         # Déterminer le point de départ
         coord_start = None
-        if self.data[-1][0] == "point":
-            coord_start = list(self.data[-1][1])[0]
-        elif self.data[-1][0] == "straight line":
-            coord_start = list(self.data[-1][1])[1]
-        elif self.data[-1][0] == "curve":
-            coord_start = list(self.data[-1][1])[2]
+        if self.coord_cart[-1][0] == "point":
+            coord_start = list(self.coord_cart[-1][1])[0]
+        elif self.coord_cart[-1][0] == "straight line":
+            coord_start = list(self.coord_cart[-1][1])[1]
+        elif self.coord_cart[-1][0] == "curve":
+            coord_start = list(self.coord_cart[-1][1])[2]
 
         x_start, y_start, z_start = coord_start
 
@@ -153,7 +140,7 @@ class DronePathCalculator:
             )
 
             # Stockage des données dans le bon ordre (x, y, z)
-            self.data.append([
+            self.coord_cart.append([
                 "curve", 
                 [
                     (x_start, y_start, z_start),  # point de départ
@@ -181,7 +168,7 @@ class DronePathCalculator:
                 raise ValueError("axe doit être 'x', 'y' ou 'z'.")
 
             # Stockage des coordonnées dans le bon ordre (x, y, z)
-            self.data.append([
+            self.coord_cart.append([
                 "straight line",
                 [
                     (x_start, y_start, z_start),  # point de départ
@@ -189,6 +176,57 @@ class DronePathCalculator:
                 ]
             ])
 
+    def ajout_gate_cartesien(self, gate_type):
+
+        coord_start = None
+        if self.coord_cart[-1][0] == "point":
+            coord_start = list(self.coord_cart[-1][1])[0]
+        elif self.coord_cart[-1][0] == "straight line":
+            coord_start = list(self.coord_cart[-1][1])[1]
+        elif self.coord_cart[-1][0] == "curve":
+            coord_start = list(self.coord_cart[-1][1])[2]
+        
+        x, y, z = coord_start
+        distance_gate = 50
+
+        x += round(distance_gate * math.cos(math.radians(self.angle)))
+        y += round(distance_gate * math.sin(math.radians(self.angle)))
+
+        self.gates_cart.append([gate_type, self.angle, [x, y, z]])
+            
+    def effectuer_mouvements_drone(self):
+        # Effectuer les mouvements en fonction des coordonnées calculées
+        for i, coord in enumerate(self.matrice_coordonnees):
+            gate_type = self.gate_types[i]
+            self.effectuer_mouvement(coord, gate_type)
+
+    def effectuer_mouvement(self, position_porte, gate_type):
+            x_target, y_target, z_target = position_porte
+
+            dist = self.calculer_distance(x_target, y_target, z_target, 0, 0, 0)
+
+            # Calcul du point du milieu
+            x_middle = int((x_target) / 2)
+            y_middle = int((y_target) / 2)
+            z_middle = int((z_target) / 2 + int(dist / 20))
+
+            if DRONE_ACTIVATED:
+                vitesse = 60
+
+                print(f"Coordonnées de la target: x={x_target}, y={y_target}, z={z_target}")
+                print(f"Coordonnées du point du milieu: x={x_middle}, y={y_middle}, z={z_middle}")
+
+                # 1. Déplacement vers le point du milieu
+                self.tello.curve_xyz_speed(x_middle, y_middle, z_middle, x_target, y_target, z_target, vitesse)
+
+                # 2. Avancer de 150
+                self.tello.move_forward(150)
+
+                # 3. Tourner à gauche ou à droite de 110° selon le type de porte
+                if gate_type == "hex":
+                    self.tello.rotate_counter_clockwise(110)
+                elif gate_type == "hoop":
+                    self.tello.rotate_clockwise(110)
 
 
 
@@ -196,24 +234,24 @@ class DronePathCalculator:
         """Exécution complète du calcul."""
         self.lecture_log()
         self.calculer_coordonnees()
-        self.afficher_coordonnees()
+        self.creation_path_cartesien()
 
+        print(self.mouvements)
         print(self.matrice_coordonnees)
+        print(self.coord_cart)
+        print(self.gates_cart)
 
         if DRONE_ACTIVATED:
             self.tello.connect()
             self.tello.takeoff()
             self.tello.move_up(110 - self.tello.get_height())
 
-        # Effectuer les mouvements en fonction des coordonnées calculées
-        for i, coord in enumerate(self.matrice_coordonnees):
-            gate_type = self.gate_types[i]
-            self.effectuer_mouvement(coord, gate_type)
+        self.effectuer_mouvements_drone()
 
         if DRONE_ACTIVATED:
             self.tello.land()
 
-        print(self.data)
+
 
 
 if __name__ == "__main__":

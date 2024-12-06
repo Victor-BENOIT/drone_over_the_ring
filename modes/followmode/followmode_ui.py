@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
@@ -21,11 +22,12 @@ class DroneApp:
         calculator = DronePathCalculator(self.log_path)
         calculator.lecture_log()
         calculator.calculer_coordonnees()
+        calculator.creation_path_cartesien()
         
         # Afficher les résultats
-        self.display_results(calculator.data)
+        self.display_results(calculator.coord_cart, calculator.gates_cart)
     
-    def display_results(self, data):
+    def display_results(self, coord_cart, gates_cart):
         """Affiche une fenêtre avec les résultats et un graphe 3D."""
         results_window = self.master  # Utiliser la fenêtre principale
         results_window.title("Résultats des calculs")
@@ -38,7 +40,7 @@ class DroneApp:
         coords_label.pack()
         
         coords_text = tk.Text(coords_frame, height=20, width=50)
-        for item in data:
+        for item in coord_cart:
             mouvement_type, points = item
             coords_text.insert(tk.END, f"{mouvement_type}:\n")
             for point in points:
@@ -61,48 +63,79 @@ class DroneApp:
         ax = figure.add_subplot(111, projection='3d')
         
         # Variables pour stocker les données pour le graphe
-        x_data = []
-        y_data = []
-        z_data = []
+        x_coord_cart = []
+        y_coord_cart = []
+        z_coord_cart = []
         
         # Ajouter les mouvements dans le graphique
-        for item in data:
+        for item in coord_cart:
             mouvement_type, points = item
             if mouvement_type == "point":
-                x_data.append(points[0][0])
-                y_data.append(points[0][1])
-                z_data.append(points[0][2])
-                ax.scatter(points[0][0], points[0][1], points[0][2], c='g', marker='o')  # Point vert
+                x_coord_cart.append(points[0][0] / 100)  # Convertir en mètres
+                y_coord_cart.append(points[0][1] / 100)
+                z_coord_cart.append(points[0][2] / 100)
+                ax.scatter(points[0][0] / 100, points[0][1] / 100, points[0][2] / 100, c='g', marker='o')  # Point vert
             elif mouvement_type == "straight line":
                 for i in range(1, len(points)):
-                    ax.plot([points[i-1][0], points[i][0]], 
-                            [points[i-1][1], points[i][1]], 
-                            [points[i-1][2], points[i][2]], c='b')  # Lignes droites bleues
+                    # Convertir les coordonnées en mètres pour le graphique
+                    ax.plot([points[i-1][0] / 100, points[i][0] / 100], 
+                            [points[i-1][1] / 100, points[i][1] / 100], 
+                            [points[i-1][2] / 100, points[i][2] / 100], c='b')  # Lignes droites bleues
             elif mouvement_type == "curve":
                 # Ajouter une courbe en plusieurs segments
                 for i in range(1, len(points)-1):
-                    ax.plot([points[i-1][0], points[i][0], points[i+1][0]], 
-                            [points[i-1][1], points[i][1], points[i+1][1]], 
-                            [points[i-1][2], points[i][2], points[i+1][2]], c='r')  # Courbe rouge
+                    # Convertir les coordonnées en mètres pour le graphique
+                    ax.plot([points[i-1][0] / 100, points[i][0] / 100, points[i+1][0] / 100], 
+                            [points[i-1][1] / 100, points[i][1] / 100, points[i+1][1] / 100], 
+                            [points[i-1][2] / 100, points[i][2] / 100, points[i+1][2] / 100], c='r')  # Courbe rouge
 
+
+        for gate in gates_cart:
+            gate_type, angle, center = gate
+            cx, cy, cz = [c / 100 for c in center]  # Convertir en mètres
+
+            if gate_type == "hoop":
+                # Tracer un cercle dans le plan XY à une hauteur constante Z
+                theta = np.linspace(0, 2 * np.pi, 100)
+                x = 0.3 * np.cos(theta) + cx  # Rayon 0.3 m
+                y = 0.3 * np.sin(theta) + cy
+                z = np.full_like(x, cz)  # Constante sur Z
+                ax.plot(x, y, z, color='blue', label='Hoop')
+
+
+            elif gate_type == "hex":
+                # Tracer un hexagone dans le plan XY à une hauteur constante Z
+                theta = np.linspace(0, 2 * np.pi, 6, endpoint=True)  # 6 côtés
+                x = 0.325 * np.cos(theta) + cx  # Rayon 0.325 m
+                y = 0.325 * np.sin(theta) + cy
+                z = np.full_like(x, cz)  # Constante sur Z
+                ax.plot(x, y, z, color='orange', label='Hexagon')
+
+        
         ax.set_xlabel('X (mètres)')
         ax.set_ylabel('Y (mètres)')
         ax.set_zlabel('Z (mètres)')
         ax.set_title("Trajectoire du drone")
         
-        # Définir les limites des axes pour un espace de 5m x 5m x 5m
-        ax.set_xlim([-5, 5])  # En mètres
-        ax.set_ylim([-5, 5])  # En mètres
-        ax.set_zlim([-5, 5])  # En mètres
-        
-        # Ajouter des ticks tous les mètres
-        ax.set_xticks(range(-5, 6, 1))  # Chaque mètre
-        ax.set_yticks(range(-5, 6, 1))
-        ax.set_zticks(range(-5, 6, 1))
+        # Définir les limites initiales des axes
+        ax.set_xlim([-5, 5])
+        ax.set_ylim([0, 5])
+        ax.set_zlim([0, 5])
         
         canvas = FigureCanvasTkAgg(figure, master=graph_frame)
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         canvas.draw()
+
+        # Fonction de zoom à la molette
+        def on_scroll(event):
+            scale_factor = 1.2 if event.button == 'up' else 1 / 1.2  # Zoom in ou out
+            ax.set_xlim([scale_factor * limit for limit in ax.get_xlim()])
+            ax.set_ylim([scale_factor * limit for limit in ax.get_ylim()])
+            ax.set_zlim([scale_factor * limit for limit in ax.get_zlim()])
+            canvas.draw()
+
+        # Connecter la molette au graphique
+        canvas.mpl_connect("scroll_event", on_scroll)
 
     def takeoff(self):
         """Action déclenchée lors du clic sur le bouton 'Décollage'."""
