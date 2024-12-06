@@ -23,10 +23,10 @@ class DroneApp:
         calculator.calculer_coordonnees()
         
         # Afficher les résultats
-        self.display_results(calculator.matrice_coordonnees)
+        self.display_results(calculator.data)
     
-    def display_results(self, coordinates):
-        """Affiche une fenêtre avec les coordonnées et un graphe 3D."""
+    def display_results(self, data):
+        """Affiche une fenêtre avec les résultats et un graphe 3D."""
         results_window = self.master  # Utiliser la fenêtre principale
         results_window.title("Résultats des calculs")
         
@@ -37,9 +37,12 @@ class DroneApp:
         coords_label = tk.Label(coords_frame, text="Coordonnées des points:")
         coords_label.pack()
         
-        coords_text = tk.Text(coords_frame, height=20, width=30)
-        for coord in coordinates:
-            coords_text.insert(tk.END, f"x={coord[0]}, y={coord[1]}, z={coord[2]}\n")
+        coords_text = tk.Text(coords_frame, height=20, width=50)
+        for item in data:
+            mouvement_type, points = item
+            coords_text.insert(tk.END, f"{mouvement_type}:\n")
+            for point in points:
+                coords_text.insert(tk.END, f"  x={point[0]}, y={point[1]}, z={point[2]}\n")
         coords_text.pack()
         
         # Bouton Décollage
@@ -57,14 +60,33 @@ class DroneApp:
         figure = plt.Figure(figsize=(5, 5), dpi=100)
         ax = figure.add_subplot(111, projection='3d')
         
-        # Extraire les coordonnées pour le graphe en inversant X et Y
-        x_data = [coord[1] / 100 for coord in coordinates]  # Convertir Y en X et en mètres
-        y_data = [coord[0] / 100 for coord in coordinates]  # Convertir X en Y et en mètres
-        z_data = [coord[2] / 100 for coord in coordinates]  # Convertir Z en mètres
+        # Variables pour stocker les données pour le graphe
+        x_data = []
+        y_data = []
+        z_data = []
         
-        ax.scatter(x_data, y_data, z_data, c='r', marker='o')
-        ax.set_xlabel('Y (mètres)')
-        ax.set_ylabel('X (mètres)')
+        # Ajouter les mouvements dans le graphique
+        for item in data:
+            mouvement_type, points = item
+            if mouvement_type == "point":
+                x_data.append(points[0][0])
+                y_data.append(points[0][1])
+                z_data.append(points[0][2])
+                ax.scatter(points[0][0], points[0][1], points[0][2], c='g', marker='o')  # Point vert
+            elif mouvement_type == "straight line":
+                for i in range(1, len(points)):
+                    ax.plot([points[i-1][0], points[i][0]], 
+                            [points[i-1][1], points[i][1]], 
+                            [points[i-1][2], points[i][2]], c='b')  # Lignes droites bleues
+            elif mouvement_type == "curve":
+                # Ajouter une courbe en plusieurs segments
+                for i in range(1, len(points)-1):
+                    ax.plot([points[i-1][0], points[i][0], points[i+1][0]], 
+                            [points[i-1][1], points[i][1], points[i+1][1]], 
+                            [points[i-1][2], points[i][2], points[i+1][2]], c='r')  # Courbe rouge
+
+        ax.set_xlabel('X (mètres)')
+        ax.set_ylabel('Y (mètres)')
         ax.set_zlabel('Z (mètres)')
         ax.set_title("Trajectoire du drone")
         

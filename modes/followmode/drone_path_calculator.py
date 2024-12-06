@@ -3,7 +3,6 @@ from djitellopy import Tello
 import math
 
 LOG_PATH = "modes/followmode/log_test_curve.txt"
-POIDS_RECTIFICATION = False
 DRONE_ACTIVATED = False
 
 class DronePathCalculator:
@@ -13,10 +12,6 @@ class DronePathCalculator:
         self.matrice_coordonnees = []  # Matrice pour stocker les coordonnées
         self.coordonnees_porte = (None, None, None)
         self.gate_types = []
-        # self.data = [["point", {(0, 0, 0)}],
-        # ["curve", {(0, 0, 0), (100, 50, 150), (200, 50, 150)}],
-        # ["straight line", {(200, 50, 150), (200, 50, 2500)}]
-        # ]
         self.angle = 90 #cartésiennes
         self.data = [
             ["point", [(0, 0, 0)]]
@@ -32,13 +27,6 @@ class DronePathCalculator:
                 if re.match(r'^(up|down|forward|backward|left|right|rotate_counter_clockwise|rotate_clockwise) \d+', line):
                     mouvement, valeur = line.split()
                     valeur = int(valeur)
-
-                    # Appliquer la rectification si nécessaire
-                    if POIDS_RECTIFICATION:
-                        if mouvement == "forward":
-                            valeur = int(valeur * 0.5)
-                        if mouvement == "up":
-                            valeur = int(valeur * 0.5)
 
                     self.mouvements.append([mouvement, valeur])
 
@@ -78,7 +66,7 @@ class DronePathCalculator:
         """Affiche les coordonnées calculées."""
         for i, coord in enumerate(self.matrice_coordonnees):
             x, y, z = coord
-            print(f"Coordonnées avant la porte {self.gate_types[i]}: x={x}, y={y}, z={z}")
+            print(f"Coordonnées relatives avant la porte {self.gate_types[i]}: x={x}, y={y}, z={z}")
 
     def effectuer_mouvement(self, position_porte, gate_type):
         x_target, y_target, z_target = position_porte
@@ -103,9 +91,9 @@ class DronePathCalculator:
             distance=150)
         
         if gate_type == "hex":
-            self.angle += 110
+            self.angle += 90
         elif gate_type == "hoop":
-            self.tello -=110
+            self.angle -= 90
 
         if DRONE_ACTIVATED:
             vitesse = 60
@@ -126,10 +114,10 @@ class DronePathCalculator:
                 self.tello.rotate_clockwise(110)
 
 
-    def ajout_coordonnees_cartesiennes(self, type_mouvement, coord_middle=None, coord_target=None, axe=None, distance=None):
-        coord_start = None
 
-        # Déterminer le point de départ en fonction du dernier type de mouvement
+    def ajout_coordonnees_cartesiennes(self, type_mouvement, coord_middle=None, coord_target=None, axe=None, distance=None):
+        # Déterminer le point de départ
+        coord_start = None
         if self.data[-1][0] == "point":
             coord_start = list(self.data[-1][1])[0]
         elif self.data[-1][0] == "straight line":
@@ -137,48 +125,67 @@ class DronePathCalculator:
         elif self.data[-1][0] == "curve":
             coord_start = list(self.data[-1][1])[2]
 
-        # Extraire les coordonnées de départ
         x_start, y_start, z_start = coord_start
 
+        # Si l'angle n'existe pas encore, initialiser à 90° (facing X+ axis)
+        if not hasattr(self, "angle"):
+            self.angle = 90
+
         if type_mouvement == "curve":
-            # Vérifier que `coord_middle` et `coord_target` sont fournis
             if coord_middle is None or coord_target is None:
                 raise ValueError("coord_middle et coord_target doivent être fournis pour un mouvement 'curve'.")
-            
+
+            # Calculer les coordonnées des points intermédiaire et final en fonction de l'angle
             x_middle, y_middle, z_middle = coord_middle
             x_target, y_target, z_target = coord_target
 
-            # Ajouter les coordonnées pour un mouvement en courbe
+            # Calcul des coordonnées globales en fonction de l'angle
+            middle_global = (
+                round(x_start + x_middle * math.cos(math.radians(self.angle)) - y_middle * math.sin(math.radians(self.angle))),
+                round(y_start + x_middle * math.sin(math.radians(self.angle)) + y_middle * math.cos(math.radians(self.angle))),
+                round(z_start + z_middle)
+            )
+
+            target_global = (
+                round(x_start + x_target * math.cos(math.radians(self.angle)) - y_target * math.sin(math.radians(self.angle))),
+                round(y_start + x_target * math.sin(math.radians(self.angle)) + y_target * math.cos(math.radians(self.angle))),
+                round(z_start + z_target)
+            )
+
+            # Stockage des données dans le bon ordre (x, y, z)
             self.data.append([
                 "curve", 
                 [
-                    coord_start, 
-                    (x_middle + x_start, y_middle + y_start, z_middle + z_start), 
-                    (x_target + x_start, y_target + y_start, z_target + z_start)
+                    (x_start, y_start, z_start),  # point de départ
+                    middle_global,  # point intermédiaire
+                    target_global   # point cible
                 ]
             ])
 
         elif type_mouvement == "straight line":
-            # Vérifier que `axe` et `distance` sont fournis
             if axe is None or distance is None:
                 raise ValueError("axe et distance doivent être fournis pour un mouvement 'straight line'.")
-            
-            # Calculer la nouvelle position en fonction de l'axe et de la distance
+
+            # Calculer la nouvelle position en ligne droite en fonction de l'angle
             if axe == "x":
-                new_coord = (x_start + distance, y_start, z_start)
+                dx = round(distance * math.cos(math.radians(self.angle)))
+                dy = round(distance * math.sin(math.radians(self.angle)))
+                new_coord = (round(x_start + dx), round(y_start + dy), round(z_start))
             elif axe == "y":
-                new_coord = (x_start, y_start + distance, z_start)
+                # Mouvement sur l'axe Y sans angle
+                new_coord = (round(x_start), round(y_start + distance), round(z_start))
             elif axe == "z":
-                new_coord = (x_start, y_start, z_start + distance)
+                # Mouvement sur l'axe Z sans impact d'angle
+                new_coord = (round(x_start), round(y_start), round(z_start + distance))
             else:
                 raise ValueError("axe doit être 'x', 'y' ou 'z'.")
 
-            # Ajouter les coordonnées pour une ligne droite
+            # Stockage des coordonnées dans le bon ordre (x, y, z)
             self.data.append([
-                "straight line", 
+                "straight line",
                 [
-                    coord_start, 
-                    new_coord
+                    (x_start, y_start, z_start),  # point de départ
+                    new_coord  # point d'arrivée
                 ]
             ])
 
