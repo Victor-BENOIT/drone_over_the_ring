@@ -2,10 +2,9 @@ import re
 from djitellopy import Tello
 import math
 
-LOG_PATH = "log_test_curve.txt"
+LOG_PATH = "modes/followmode/log_test_curve.txt"
 POIDS_RECTIFICATION = False
-DRONE_ACTIVATED = True
-
+DRONE_ACTIVATED = False
 
 class DronePathCalculator:
     def __init__(self, log_path):
@@ -14,6 +13,14 @@ class DronePathCalculator:
         self.matrice_coordonnees = []  # Matrice pour stocker les coordonnées
         self.coordonnees_porte = (None, None, None)
         self.gate_types = []
+        # self.data = [["point", {(0, 0, 0)}],
+        # ["curve", {(0, 0, 0), (100, 50, 150), (200, 50, 150)}],
+        # ["straight line", {(200, 50, 150), (200, 50, 2500)}]
+        # ]
+        self.angle = 90 #cartésiennes
+        self.data = [
+            ["point", [(0, 0, 0)]]
+            ]
         if DRONE_ACTIVATED:
             self.tello = Tello()
 
@@ -65,7 +72,7 @@ class DronePathCalculator:
                     z -= value
 
     def calculer_distance(self, x1, y1, z1, x2, y2, z2):
-            return round(math.sqrt((x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2), 2)
+            return round(math.sqrt((x2 - x1)**2 + (y1 - y1)**2 + (z2 - z1)**2), 2)
 
     def afficher_coordonnees(self):
         """Affiche les coordonnées calculées."""
@@ -77,16 +84,32 @@ class DronePathCalculator:
         x_target, y_target, z_target = position_porte
 
         dist = self.calculer_distance(x_target, y_target, z_target, 0, 0, 0)
-        print(dist)
 
         # Calcul du point du milieu
         x_middle = int((x_target) / 2)
         y_middle = int((y_target) / 2)
         z_middle = int((z_target) / 2 + int(dist / 20))
 
-        vitesse = 60
+        # Ajout des coordonnées cartésiennes
+        self.ajout_coordonnees_cartesiennes(
+            "curve", 
+            coord_middle=(x_middle, y_middle, z_middle), 
+            coord_target=(x_target, y_target, z_target))
+        
+
+        self.ajout_coordonnees_cartesiennes(
+            "straight line", 
+            axe="x", 
+            distance=150)
+        
+        if gate_type == "hex":
+            self.angle += 110
+        elif gate_type == "hoop":
+            self.tello -=110
 
         if DRONE_ACTIVATED:
+            vitesse = 60
+
             print(f"Coordonnées de la target: x={x_target}, y={y_target}, z={z_target}")
             print(f"Coordonnées du point du milieu: x={x_middle}, y={y_middle}, z={z_middle}")
 
@@ -101,6 +124,66 @@ class DronePathCalculator:
                 self.tello.rotate_counter_clockwise(110)
             elif gate_type == "hoop":
                 self.tello.rotate_clockwise(110)
+
+
+    def ajout_coordonnees_cartesiennes(self, type_mouvement, coord_middle=None, coord_target=None, axe=None, distance=None):
+        coord_start = None
+
+        # Déterminer le point de départ en fonction du dernier type de mouvement
+        if self.data[-1][0] == "point":
+            coord_start = list(self.data[-1][1])[0]
+        elif self.data[-1][0] == "straight line":
+            coord_start = list(self.data[-1][1])[1]
+        elif self.data[-1][0] == "curve":
+            coord_start = list(self.data[-1][1])[2]
+
+        # Extraire les coordonnées de départ
+        x_start, y_start, z_start = coord_start
+
+        if type_mouvement == "curve":
+            # Vérifier que `coord_middle` et `coord_target` sont fournis
+            if coord_middle is None or coord_target is None:
+                raise ValueError("coord_middle et coord_target doivent être fournis pour un mouvement 'curve'.")
+            
+            x_middle, y_middle, z_middle = coord_middle
+            x_target, y_target, z_target = coord_target
+
+            # Ajouter les coordonnées pour un mouvement en courbe
+            self.data.append([
+                "curve", 
+                [
+                    coord_start, 
+                    (x_middle + x_start, y_middle + y_start, z_middle + z_start), 
+                    (x_target + x_start, y_target + y_start, z_target + z_start)
+                ]
+            ])
+
+        elif type_mouvement == "straight line":
+            # Vérifier que `axe` et `distance` sont fournis
+            if axe is None or distance is None:
+                raise ValueError("axe et distance doivent être fournis pour un mouvement 'straight line'.")
+            
+            # Calculer la nouvelle position en fonction de l'axe et de la distance
+            if axe == "x":
+                new_coord = (x_start + distance, y_start, z_start)
+            elif axe == "y":
+                new_coord = (x_start, y_start + distance, z_start)
+            elif axe == "z":
+                new_coord = (x_start, y_start, z_start + distance)
+            else:
+                raise ValueError("axe doit être 'x', 'y' ou 'z'.")
+
+            # Ajouter les coordonnées pour une ligne droite
+            self.data.append([
+                "straight line", 
+                [
+                    coord_start, 
+                    new_coord
+                ]
+            ])
+
+
+
 
     def run(self):
         """Exécution complète du calcul."""
@@ -122,6 +205,8 @@ class DronePathCalculator:
 
         if DRONE_ACTIVATED:
             self.tello.land()
+
+        print(self.data)
 
 
 if __name__ == "__main__":
