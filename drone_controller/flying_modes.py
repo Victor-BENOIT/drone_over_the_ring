@@ -208,43 +208,46 @@ class AutonomousMode:
         # Ajout de la logique pour calculer l'angle de la porte
         ratio = w / h
         max_angle = 90  # Définir l'angle maximum possible
+        move_side_dist = 50
+        angle_side_value = 20
         angle_porte = round(max(0, min(max_angle, (1 - ratio) * max_angle)) * 2, 2)
 
         self.last_angles.append(angle_porte)
 
         print("angle porte : " + str(angle_porte))
 
-        if angle_porte <= 4:
+        if angle_porte <= 10:
             self.locked_avoidance_maneuver = True
 
         if not self.locked_avoidance_maneuver:
             if not self.up_maneuver:
                 self.controller.movement.move_up(25)
+                self.controller.movement.move_backward(50)
                 self.up_maneuver = True
 
             # print(f"Distance atteinte. Rotation et déplacement gauche en cours...")
 
             if len(self.last_angles) > 1:
                 if self.last_angles[-1] > self.last_angles[-2]:
-                    self.controller.movement.rotate_clockwise(10)
+                    self.controller.movement.rotate_clockwise(angle_side_value)
                     # print("Rotation: 10°")
-                    self.controller.movement.move_left(24)
+                    self.controller.movement.move_left(move_side_dist)
                 else:
-                    self.controller.movement.rotate_counter_clockwise(10)
+                    self.controller.movement.rotate_counter_clockwise(angle_side_value)
                     # print("Rotation: -10°")
-                    self.controller.movement.move_right(24)
+                    self.controller.movement.move_right(move_side_dist)
             else:
-                self.controller.movement.rotate_clockwise(10)
+                self.controller.movement.rotate_clockwise(angle_side_value)
                 # print("Rotation: 10°")
-                self.controller.movement.move_left(24)
+                self.controller.movement.move_left(move_side_dist)
                 # print("Déplacement gauche: 24cm")
 
             # Boucle pour rotation et déplacement
             if angle_porte != 0:
-                self.controller.movement.rotate_clockwise(10)
+                self.controller.movement.rotate_clockwise(angle_side_value)
                 # print("Rotation: 10°")
 
-                self.controller.movement.move_left(24)
+                self.controller.movement.move_left(move_side_dist)
                 # print("Déplacement gauche: 24cm")
 
 
