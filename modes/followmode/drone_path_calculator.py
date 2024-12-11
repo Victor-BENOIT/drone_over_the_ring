@@ -252,8 +252,6 @@ class DronePathCalculator:
             self.tello.land()
 
 
-
-
 if __name__ == "__main__":
     calculator = DronePathCalculator(LOG_PATH)
     calculator.run()

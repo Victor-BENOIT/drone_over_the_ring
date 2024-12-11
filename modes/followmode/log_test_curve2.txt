@@ -1,0 +1,24 @@
+forward 350
+left 210
+up 80
+GATE_IN_FRONT hex
+forward 500
+left 120
+up 50
+GATE_IN_FRONT hoop
+up 80
+forward 160
+right 190
+GATE_IN_FRONT hoop
+down 60
+forward 550
+left 90
+GATE_IN_FRONT hex
+forward 250
+left 120
+up 40
+
+
+
+
+

@@ -11,7 +11,7 @@ class DroneApp:
         self.master = master
         self.master.title("Drone Path Calculator")
         
-        self.log_path = "modes/followmode/log_test_curve.txt"
+        self.log_path = "modes/followmode/log_test_curve2.txt"
         
         # Charger les données et afficher les résultats
         self.launch_path_calculation()
@@ -89,26 +89,36 @@ class DroneApp:
                             [points[i-1][1] / 100, points[i][1] / 100, points[i+1][1] / 100], 
                             [points[i-1][2] / 100, points[i][2] / 100, points[i+1][2] / 100], c='r')  # Courbe rouge
 
-
         for gate in gates_cart:
             gate_type, angle, center = gate
             cx, cy, cz = [c / 100 for c in center]  # Convertir en mètres
 
             if gate_type == "hoop":
-                # Tracer un cercle dans le plan XY à une hauteur constante Z
                 theta = np.linspace(0, 2 * np.pi, 100)
-                x = 0.3 * np.cos(theta) + cx  # Rayon 0.3 m
-                y = 0.3 * np.sin(theta) + cy
-                z = np.full_like(x, cz)  # Constante sur Z
+                if angle in [0, 180]:
+                    # Cercle dans le plan YZ (X constant)
+                    y = 0.3 * np.cos(theta) + cy  # Rayon 0.3 m
+                    z = 0.3 * np.sin(theta) + cz
+                    x = np.full_like(y, cx)
+                elif angle in [90, 270]:
+                    # Cercle dans le plan XZ (Y constant)
+                    x = 0.3 * np.cos(theta) + cx  # Rayon 0.3 m
+                    z = 0.3 * np.sin(theta) + cz
+                    y = np.full_like(x, cy)
                 ax.plot(x, y, z, color='blue', label='Hoop')
 
-
             elif gate_type == "hex":
-                # Tracer un hexagone dans le plan XY à une hauteur constante Z
                 theta = np.linspace(0, 2 * np.pi, 6, endpoint=True)  # 6 côtés
-                x = 0.325 * np.cos(theta) + cx  # Rayon 0.325 m
-                y = 0.325 * np.sin(theta) + cy
-                z = np.full_like(x, cz)  # Constante sur Z
+                if angle in [0, 180]:
+                    # Hexagone dans le plan YZ (X constant)
+                    y = 0.325 * np.cos(theta) + cy
+                    z = 0.325 * np.sin(theta) + cz
+                    x = np.full_like(y, cx)
+                elif angle in [90, 270]:
+                    # Hexagone dans le plan XZ (Y constant)
+                    x = 0.325 * np.cos(theta) + cx
+                    z = 0.325 * np.sin(theta) + cz
+                    y = np.full_like(x, cy)
                 ax.plot(x, y, z, color='orange', label='Hexagon')
 
         
