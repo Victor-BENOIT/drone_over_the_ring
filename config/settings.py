@@ -78,7 +78,7 @@ DIST_DISPLAY_HEIGHT = 50 # Hauteur de la zone d'affichage de la distance
 WINDOW_COEF = 0.25 # Coefficient de la taille de la zone target (par rapport à la taille de l'écran)
 
 WINDOW_OFFSET_X = 0 # Offset en x de la zone target
-WINDOW_OFFSET_Y = -200 # Offset en y de la zone target -100 pour aller plus bas / 100 pour aller plus haut
+WINDOW_OFFSET_Y = -180 # Offset en y de la zone target -100 pour aller plus bas / 100 pour aller plus haut
 
 square_target = True
 # Largeur et Hauteur de la zone target
