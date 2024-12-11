@@ -31,12 +31,12 @@ LOGGING_ENABLED = True
 #################################################################################################################
 DRONE_SPEED = 100  # 10-100 (vitesse de déplacement par défaut)
 DRONE_DIST = 20  # 20-500cm (distance de déplacement par défaut)
-STARTING_DRONE_HEIGHT = 130  # Hauteur de départ du drone en cm
+STARTING_DRONE_HEIGHT = 170  # Hauteur de départ du drone en cm
 
 IDLE_MODE = False
 MANUAL_MODE = False
-AUTONOMOUS_MODE = False
-SCAN_MODE = True
+AUTONOMOUS_MODE = True
+SCAN_MODE = False
 
 if IDLE_MODE:
     MANUAL_MODE = False

@@ -86,10 +86,14 @@ def charger_donnees_fichier(fichier):
 # Charger les points à partir du fichier
 points_data = charger_donnees_fichier("detected_doors.txt")
 
+# Liste pour stocker les résultats au format demandé
+portes = []
+
 # Tracer chaque point en fonction des données
 for point in points_data:
-    distance = point['distance']/2
+    distance = point['distance'] / 2
     angle_camera = point['angle camera']
+    angle_porte = point['angle porte']
     porte_type = point['porte']
     
     # Convertir l'angle caméra en radians
@@ -99,22 +103,51 @@ for point in points_data:
     x_nouveau = point_x + distance * math.cos(radian)
     y_nouveau = point_y + distance * math.sin(radian)
     
-    # Vérifier si le point est à l'intérieur du rectangle
-    if not (x1 <= x_nouveau <= x2 and y1 <= y_nouveau <= y2):
-        messagebox.showerror("Erreur", f"Le point à ({x_nouveau:.2f}, {y_nouveau:.2f}) sort du rectangle !")
+    # Calculer les coordonnées du plan (x_plan et y_plan) en entiers
+    x_plan = int(x_nouveau * 2 - (largeur_canevas - largeur_rectangle))
+    y_plan = int(y_nouveau * 2 - (hauteur_canevas - hauteur_rectangle))
+    
+    # Déterminer la couleur en fonction du type de porte
+    couleur = "BLEU" if porte_type == 'hoop' else "ROUGE"
+    
+    # Calculer les coordonnées des extrémités du trait
+    longueur_trait = 20  # Longueur totale du trait
+    # Calcul de l'angle trait coloré (parallèle ou perpendiculaire)
+    # Calcul de l'angle du trait coloré en fonction de l'angle de la caméra et de l'angle de la porte
+    angle_trait = math.radians(angle_camera + angle_porte - 90)
+
+    # Calculer les coordonnées des extrémités du trait coloré
+    x1_trait = x_nouveau - (longueur_trait / 2) * math.cos(angle_trait)
+    y1_trait = y_nouveau - (longueur_trait / 2) * math.sin(angle_trait)
+    x2_trait = x_nouveau + (longueur_trait / 2) * math.cos(angle_trait)
+    y2_trait = y_nouveau + (longueur_trait / 2) * math.sin(angle_trait)
+    
+    # Vérifier si les extrémités du trait sont dans le rectangle
+    if not (x1 <= x1_trait <= x2 and y1 <= y1_trait <= y2 and
+            x1 <= x2_trait <= x2 and y1 <= y2_trait <= y2):
+        messagebox.showerror("Erreur", f"Le trait sort du rectangle pour le point ({x_nouveau:.2f}, {y_nouveau:.2f}) !")
     else:
-        # Définir la couleur en fonction du type de porte
-        if porte_type == 'hoop':
-            couleur_point = "blue"  # Bleu pour 'hoop'
-        elif porte_type == 'hex':
-            couleur_point = "orange"  # Orange pour 'hex'
+        # Couleur du trait selon le type de porte
+        couleur_trait = "blue" if porte_type == 'hoop' else "orange"
         
-        # Dessiner le point avec la couleur appropriée
-        canvas.create_oval(
-            x_nouveau - rayon_point, y_nouveau - rayon_point,  # Coin supérieur gauche du cercle
-            x_nouveau + rayon_point, y_nouveau + rayon_point,  # Coin inférieur droit du cercle
-            fill=couleur_point, outline=couleur_point  # Couleur variable selon le type de porte
-        )
+        # Dessiner le trait
+        canvas.create_line(x1_trait, y1_trait, x2_trait, y2_trait, fill=couleur_trait, width=2)
+        
+        # Ajouter la porte à la liste
+        portes.append({
+            "couleur": couleur,
+            "x1": int((x1_trait + x2_trait) / 2 * 2 - (largeur_canevas - largeur_rectangle)),
+            "y1": int((y1_trait + y2_trait) / 2 * 2 - (hauteur_canevas - hauteur_rectangle)),
+            "angle": round(math.degrees(angle_porte), 2)
+        })
+
+# Afficher les résultats dans le format demandé
+print("portes = [")
+for porte in portes:
+    print(f"    Porte({porte['couleur']}, x1={porte['x1']}, y1={porte['y1']}, angle={porte['angle']}),")
+print("]")
+
+
 
 # Lancement de la boucle principale
 fenetre.mainloop()
