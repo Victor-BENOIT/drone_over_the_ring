@@ -6,6 +6,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from drone_path_calculator import DronePathCalculator
+from drone_connector import DroneConnector
 
 class DroneApp:
     def __init__(self, master):
@@ -13,6 +14,8 @@ class DroneApp:
         self.master.title("Drone Path Calculator")
         
         self.log_path = "modes/followmode/log_test_curve2.txt"
+
+        self.connector = DroneConnector()
 
         self.coord_cart = []
         self.current_move_index = 0
@@ -55,13 +58,27 @@ class DroneApp:
                 coords_text.insert(tk.END, f"  x={point[0]}, y={point[1]}, z={point[2]}\n")
         coords_text.pack()
 
+        # Bouton Connexion
+        self.connect_button = ttk.Button(
+            coords_frame,
+            text="Connexion",
+            command=self.drone_connect,
+            style="Connect.TButton"
+        )
+        style = ttk.Style()
+        style.configure("Connect.TButton", foreground="blue", background="blue")
+        self.connect_button.pack(pady=10)
+
         # Bouton Décollage
-        takeoff_button = ttk.Button(
+        self.takeoff_button = ttk.Button(
             coords_frame,
             text="Décollage",
-            command=self.takeoff
+            command=self.takeoff,
+            style="Takeoff.TButton"
         )
-        takeoff_button.pack(pady=10)
+        style = ttk.Style()
+        style.configure("Takeoff.TButton", foreground="red", background="red")
+        self.takeoff_button.pack(pady=10)
 
         # Cadre pour les graphes 3D
         graph_frame = tk.Frame(results_window)
@@ -171,17 +188,37 @@ class DroneApp:
 
     def takeoff(self):
         """Action déclenchée lors du clic sur le bouton 'Décollage'."""
-        print("Décollage effectué !")
-        self.draw_mouvement_step_by_step(self.coord_cart)
+        self.takeoff_button.config(text="Vol en cours")
+        style = ttk.Style()
+        style.configure("Takeoff.TButton", foreground="green", background="green")
+        self.takeoff_button.pack(pady=10)
+        self.draw_mouvement_step_by_step()
 
-    def draw_mouvement_step_by_step(self, coord_cart):
+    def drone_connect(self):
+        """Action déclenchée lors du clic sur le bouton 'Connexion'."""
+        self.connector.connect()
+        style = ttk.Style()
+        if self.connector.connected:
+            self.connect_button.config(text="Connecté")
+            style.configure("Connect.TButton", foreground="green", background="green")
+            self.takeoff_button.pack(pady=10)
+        else:
+            self.connect_button.config(text="Erreur de connexion")
+            style.configure("Connect.TButton", foreground="red", background="red")
+            self.connect_button.pack(pady=10)
+            return
+
+    def draw_mouvement_step_by_step(self):
         """Dessine les mouvements un à un, à intervalle d'une seconde."""
         self.current_move_index = 0  # Réinitialiser l'index
 
         # Démarrer le processus de dessin progressif
         self.update_movement()
 
-    def update_movement(self):
+        # for _ in range(len(self.coord_cart)):
+        #     self.update_movement(auto_indent = False)
+
+    def update_movement(self, auto_indent = True):
         """Met à jour l'affichage avec un mouvement à chaque appel."""
         if self.current_move_index < len(self.coord_cart):
             item = self.coord_cart[self.current_move_index]
@@ -208,8 +245,9 @@ class DroneApp:
             # Avancer à l'index suivant
             self.current_move_index += 1
 
-            # Appeler cette méthode après 1 seconde pour le mouvement suivant
-            self.master.after(1000, self.update_movement)  # 1000 ms = 1 seconde
+            if auto_indent:
+                # Appeler cette méthode après 1 seconde pour le mouvement suivant
+                self.master.after(1000, self.update_movement)  # 1000 ms = 1 seconde
 
 if __name__ == "__main__":
     root = tk.Tk()
