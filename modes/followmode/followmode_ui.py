@@ -82,7 +82,7 @@ class DroneApp:
             style="Takeoff.TButton"
         )
         style = ttk.Style()
-        style.configure("Takeoff.TButton", foreground="red", background="red")
+        style.configure("Takeoff.TButton", foreground="blue", background="blue")
         self.takeoff_button.pack(pady=10)
 
         # Cadre pour les graphes 3D
@@ -191,27 +191,42 @@ class DroneApp:
         canvas1.mpl_connect("scroll_event", on_scroll)
         canvas2.mpl_connect("scroll_event", on_scroll)
 
+    def update_button(self, type, text, couleur):
+        style = ttk.Style()
+        if type == "connect_button":
+            self.connect_button.config(text=text)
+            style.configure("Connect.TButton", foreground=couleur, background=couleur)
+            self.connect_button.pack(pady=10)
+            root.update_idletasks() 
+            root.update()
+        elif type == "takeoff_button":
+            self.takeoff_button.config(text=text)
+            style.configure("Takeoff.TButton", foreground=couleur, background=couleur)
+            self.takeoff_button.pack(pady=10)
+            root.update_idletasks() 
+            root.update()
+        else:
+            return
+
     def takeoff(self):
         """Action déclenchée lors du clic sur le bouton 'Décollage'."""
-        self.takeoff_button.config(text="Vol en cours")
-        style = ttk.Style()
-        style.configure("Takeoff.TButton", foreground="green", background="green")
-        self.takeoff_button.pack(pady=10)
-        # self.draw_mouvement_step_by_step()
-        self.execute_mouvement()
+        self.update_button("takeoff_button", "Démarrage du plan de vol", "black")
+        if self.connector.connected:
+            # self.draw_mouvement_step_by_step()
+            self.execute_mouvement()
+            self.update_button("takeoff_button", "Atterrissage", "black")
+            # self.connector.land
+            self.update_button("takeoff_button", "Vol terminé", "black")
+        else:
+            self.update_button("takeoff_button", "Drone non connecté", "red")
 
     def drone_connect(self):
         """Action déclenchée lors du clic sur le bouton 'Connexion'."""
         self.connector.connect()
-        style = ttk.Style()
         if self.connector.connected:
-            self.connect_button.config(text="Connecté")
-            style.configure("Connect.TButton", foreground="green", background="green")
-            self.takeoff_button.pack(pady=10)
+            self.update_button("connect_button", "Connecté", "green")
         else:
-            self.connect_button.config(text="Erreur de connexion")
-            style.configure("Connect.TButton", foreground="red", background="red")
-            self.connect_button.pack(pady=10)
+            self.update_button("connect_button", "Erreur de connexion", "red")
 
     def execute_mouvement(self):
         if self.connector.connected:
@@ -222,6 +237,7 @@ class DroneApp:
             time.sleep(timer)
             i = 0
             self.update_movement(auto_indent = False)
+            self.update_button("takeoff_button", "Vol en cours", "green")
             for coord_gate in self.coord_relat:
 
                 gate_type = self.gate_types[i]
