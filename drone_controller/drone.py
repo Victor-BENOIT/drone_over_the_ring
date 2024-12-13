@@ -6,8 +6,6 @@ from drone_controller.vision import Vision
 from drone_controller.targeting import Target
 from drone_controller.flying_modes import IdleMode, ManualMode, AutonomousMode, ScanMode
 from config.settings import DRONE_SPEED, MANUAL_MODE, AUTONOMOUS_MODE, SCAN_MODE, IDLE_MODE
-import threading
-import numpy as np
 
 class DroneController:
     """

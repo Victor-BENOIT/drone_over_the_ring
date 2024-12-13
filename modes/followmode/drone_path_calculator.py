@@ -1,10 +1,7 @@
 import re
 from djitellopy import Tello
 import math
-
-LOG_PATH = "modes/followmode/log_test_curve.txt"
-DRONE_ACTIVATED = False
-AVERAGE_STRATING_HEIGHT = 110
+from followmode_settings import LOG_PATH, DRONE_ACTIVATED, AVERAGE_STRATING_HEIGHT
 
 class DronePathCalculator:
     def __init__(self, log_path):
@@ -227,7 +224,6 @@ class DronePathCalculator:
                     self.tello.rotate_counter_clockwise(110)
                 elif gate_type == "hoop":
                     self.tello.rotate_clockwise(110)
-
 
 
     def run(self):

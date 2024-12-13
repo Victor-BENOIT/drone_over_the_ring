@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 import numpy as np
-import time
+import math
+import time      
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from drone_path_calculator import DronePathCalculator
 from drone_connector import DroneConnector
@@ -34,6 +34,11 @@ class DroneApp:
         calculator.creation_path_cartesien()
 
         self.coord_cart = calculator.coord_cart
+        self.coord_relat  = calculator.matrice_coordonnees
+        self.gate_types = calculator.gate_types
+
+        # print(self.gate_types)
+        # print(self.coord_relat)
         
         # Afficher les résultats
         self.display_results(self.coord_cart, calculator.gates_cart)
@@ -47,7 +52,7 @@ class DroneApp:
         coords_frame = tk.Frame(results_window)
         coords_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        coords_label = tk.Label(coords_frame, text="Coordonnées des points:")
+        coords_label = tk.Label(coords_frame, text="Coordonnées cartésiennes:")
         coords_label.pack()
 
         coords_text = tk.Text(coords_frame, height=20, width=30)
@@ -192,7 +197,8 @@ class DroneApp:
         style = ttk.Style()
         style.configure("Takeoff.TButton", foreground="green", background="green")
         self.takeoff_button.pack(pady=10)
-        self.draw_mouvement_step_by_step()
+        # self.draw_mouvement_step_by_step()
+        self.execute_mouvement()
 
     def drone_connect(self):
         """Action déclenchée lors du clic sur le bouton 'Connexion'."""
@@ -206,7 +212,51 @@ class DroneApp:
             self.connect_button.config(text="Erreur de connexion")
             style.configure("Connect.TButton", foreground="red", background="red")
             self.connect_button.pack(pady=10)
+
+    def execute_mouvement(self):
+        if self.connector.connected:
+            self.current_move_index = 0 
+            # self.connector.takeoff()
+            print("Décollage en cours")
+            timer = 2
+            time.sleep(timer)
+            i = 0
+            self.update_movement(auto_indent = False)
+            for coord_gate in self.coord_relat:
+
+                gate_type = self.gate_types[i]
+
+                x_target, y_target, z_target = coord_gate
+
+                dist = self.calculer_distance(x_target, y_target, z_target, 0, 0, 0)
+
+                x_middle = int((x_target) / 2)
+                y_middle = int((y_target) / 2)
+                z_middle = int((z_target) / 2 + int(dist / 20))
+
+                # self.connector.drone.curve_xyz_speed(x_middle, y_middle, z_middle, x_target, y_target, z_target, 60)
+                print("Curve en cours : " + str(x_middle) + " " + str(y_middle) + " " + str(z_middle) + " " + str(x_target) + " " + str(y_target) + " " + str(z_target))
+                time.sleep(timer)
+                self.update_movement(auto_indent = False)
+                # self.connector.drone.move_forward(150)
+                print("straight line en cours : 150 ")
+                time.sleep(timer)
+                self.update_movement(auto_indent = False)
+
+                if gate_type == "hex":
+                    # self.connector.drone.rotate_clockwise(90)
+                    print("Rotation en cours : 90 ")
+                    time.sleep(timer)
+                elif gate_type == "hoop":
+                    # self.connector.drone.rotate_counter_clockwise(90)
+                    print("Rotation en cours : -90 ")
+                    time.sleep(timer)
+                i += 1
+        else:
             return
+        
+    def calculer_distance(self, x1, y1, z1, x2, y2, z2):
+            return round(math.sqrt((x2 - x1)**2 + (y1 - y1)**2 + (z2 - z1)**2), 2)
 
     def draw_mouvement_step_by_step(self):
         """Dessine les mouvements un à un, à intervalle d'une seconde."""
@@ -241,6 +291,8 @@ class DroneApp:
 
             # Rafraîchir l'affichage
             self.ax2.figure.canvas.draw_idle()
+            root.update_idletasks() 
+            root.update()
 
             # Avancer à l'index suivant
             self.current_move_index += 1
