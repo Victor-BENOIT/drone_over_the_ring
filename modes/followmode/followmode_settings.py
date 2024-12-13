@@ -3,3 +3,4 @@
 LOG_PATH = "modes/followmode/log_test_curve.txt"
 DRONE_ACTIVATED = False
 AVERAGE_STRATING_HEIGHT = 110
+FULLSCREEN_ON = False

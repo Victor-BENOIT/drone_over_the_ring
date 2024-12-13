@@ -7,6 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 from drone_path_calculator import DronePathCalculator
 from drone_connector import DroneConnector
+from followmode_settings import FULLSCREEN_ON
 
 class DroneApp:
     def __init__(self, master):
@@ -36,6 +37,10 @@ class DroneApp:
         self.coord_cart = calculator.coord_cart
         self.coord_relat  = calculator.matrice_coordonnees
         self.gate_types = calculator.gate_types
+
+
+        if FULLSCREEN_ON:
+            root.attributes('-fullscreen', True)
 
         # print(self.gate_types)
         # print(self.coord_relat)
@@ -156,16 +161,16 @@ class DroneApp:
         ax1.set_ylabel('Y (mètres)')
         ax1.set_zlabel('Z (mètres)')
         ax1.set_title("Trajectoire générée")
-        ax1.set_xlim([-5, 5])
-        ax1.set_ylim([0, 5])
+        ax1.set_xlim([-8, 5])
+        ax1.set_ylim([0, 9])
         ax1.set_zlim([0, 5])
 
         ax2.set_xlabel('X (mètres)')
         ax2.set_ylabel('Y (mètres)')
         ax2.set_zlabel('Z (mètres)')
         ax2.set_title("Trajectoire actuelle")
-        ax2.set_xlim([-5, 5])
-        ax2.set_ylim([0, 5])
+        ax2.set_xlim([-8, 5])
+        ax2.set_ylim([0, 9])
         ax2.set_zlim([0, 5])
 
         # Création des canvases
