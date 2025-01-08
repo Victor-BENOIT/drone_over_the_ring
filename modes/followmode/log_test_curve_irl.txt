@@ -1,0 +1,12 @@
+forward 50
+left 20
+up 25
+GATE_IN_FRONT hex
+forward 50
+right 10
+up 20
+GATE_IN_FRONT hoop
+forward 30
+left 30
+up 10
+GATE_IN_FRONT hoop

@@ -7,14 +7,14 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 from drone_path_calculator import DronePathCalculator
 from drone_connector import DroneConnector
-from followmode_settings import FULLSCREEN_ON
+from followmode_settings import FULLSCREEN_ON, DRONE_ACTIVATED_UI, LOG_PATH, CROSS_DISTANCE
 
 class DroneApp:
     def __init__(self, master):
         self.master = master
         self.master.title("Drone Path Calculator")
         
-        self.log_path = "modes/followmode/log_test_curve2.txt"
+        self.log_path = LOG_PATH
 
         self.connector = DroneConnector()
 
@@ -220,7 +220,8 @@ class DroneApp:
             # self.draw_mouvement_step_by_step()
             self.execute_mouvement()
             self.update_button("takeoff_button", "Atterrissage", "black")
-            # self.connector.land
+            if DRONE_ACTIVATED_UI:
+                self.connector.drone.land()
             self.update_button("takeoff_button", "Vol terminé", "black")
         else:
             self.update_button("takeoff_button", "Drone non connecté", "red")
@@ -234,50 +235,62 @@ class DroneApp:
             self.update_button("connect_button", "Erreur de connexion", "red")
 
     def execute_mouvement(self):
-        if self.connector.connected:
-            self.current_move_index = 0 
-            # self.connector.takeoff()
-            print("Décollage en cours")
+        self.current_move_index = 0
+        print("Décollage en cours")
+
+        if DRONE_ACTIVATED_UI:
+            self.connector.takeoff()
+        if not DRONE_ACTIVATED_UI:
             timer = 2
             time.sleep(timer)
-            i = 0
-            self.update_movement(auto_indent = False)
-            self.update_button("takeoff_button", "Vol en cours", "green")
-            for coord_gate in self.coord_relat:
 
-                gate_type = self.gate_types[i]
+        i = 0
+        self.update_movement(auto_indent = False)
+        self.update_button("takeoff_button", "Vol en cours", "green")
+        for coord_gate in self.coord_relat:
 
-                x_target, y_target, z_target = coord_gate
+            gate_type = self.gate_types[i]
 
-                dist = self.calculer_distance(x_target, y_target, z_target, 0, 0, 0)
+            x_target, y_target, z_target = coord_gate
 
-                x_middle = int((x_target) / 2)
-                y_middle = int((y_target) / 2)
-                z_middle = int((z_target) / 2 + int(dist / 20))
+            dist = self.calculer_distance(x_target, y_target, z_target, 0, 0, 0)
 
-                # self.connector.drone.curve_xyz_speed(x_middle, y_middle, z_middle, x_target, y_target, z_target, 60)
+            x_middle = int((x_target) / 2)
+            y_middle = int((y_target) / 2)
+            z_middle = int((z_target) / 2 + int(dist / 20))
+
+            if DRONE_ACTIVATED_UI:
+                self.connector.drone.curve_xyz_speed(x_middle, y_middle, z_middle, x_target, y_target, z_target, 60)
+            if not DRONE_ACTIVATED_UI:
                 print("Curve en cours : " + str(x_middle) + " " + str(y_middle) + " " + str(z_middle) + " " + str(x_target) + " " + str(y_target) + " " + str(z_target))
                 time.sleep(timer)
-                self.update_movement(auto_indent = False)
-                # self.connector.drone.move_forward(150)
-                print("straight line en cours : 150 ")
-                time.sleep(timer)
-                self.update_movement(auto_indent = False)
 
-                if gate_type == "hex":
-                    # self.connector.drone.rotate_clockwise(90)
+            self.update_movement(auto_indent = False)
+
+            if DRONE_ACTIVATED_UI:
+                self.connector.drone.move_forward(CROSS_DISTANCE)
+            if not DRONE_ACTIVATED_UI:
+                print("straight line en cours : " + str(CROSS_DISTANCE))
+                time.sleep(timer)
+
+            self.update_movement(auto_indent = False)
+
+            if gate_type == "hex":
+                if DRONE_ACTIVATED_UI:
+                    self.connector.drone.rotate_counter_clockwise(90)
+                if not DRONE_ACTIVATED_UI:
                     print("Rotation en cours : 90 ")
                     time.sleep(timer)
-                elif gate_type == "hoop":
-                    # self.connector.drone.rotate_counter_clockwise(90)
+            elif gate_type == "hoop":
+                if DRONE_ACTIVATED_UI:
+                    self.connector.drone.rotate_clockwise(90)
+                if not DRONE_ACTIVATED_UI:
                     print("Rotation en cours : -90 ")
                     time.sleep(timer)
-                i += 1
-        else:
-            return
+            i += 1
         
     def calculer_distance(self, x1, y1, z1, x2, y2, z2):
-            return round(math.sqrt((x2 - x1)**2 + (y1 - y1)**2 + (z2 - z1)**2), 2)
+            return round(math.sqrt((x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2), 2)
 
     def draw_mouvement_step_by_step(self):
         """Dessine les mouvements un à un, à intervalle d'une seconde."""
