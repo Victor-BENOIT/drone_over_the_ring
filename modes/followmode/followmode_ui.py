@@ -83,7 +83,7 @@ class DroneApp:
         self.takeoff_button = ttk.Button(
             coords_frame,
             text="Décollage",
-            command=self.takeoff,
+            command=self.execute_mouvement,
             style="Takeoff.TButton"
         )
         style = ttk.Style()

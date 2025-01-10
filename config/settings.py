@@ -31,7 +31,7 @@ LOGGING_ENABLED = True
 #################################################################################################################
 DRONE_SPEED = 100  # 10-100 (vitesse de déplacement par défaut)
 DRONE_DIST = 20  # 20-500cm (distance de déplacement par défaut)
-STARTING_DRONE_HEIGHT = 160  # Hauteur de départ du drone en cm
+STARTING_DRONE_HEIGHT = 170  # Hauteur de départ du drone en cm
 
 IDLE_MODE = False
 MANUAL_MODE = False
@@ -98,6 +98,6 @@ MOVE_RATIO = 0.6 # [0:1] Ratio de déplacement par rapport à la distance de la 
 DEAD_ZONE = 10 # Zone morte pour le déplacement en cm
 
 
-MAX_GATES_PASSED = 1 # Nombre de portes à passer
+MAX_GATES_PASSED = 3 # Nombre de portes à passer
 
 DEAD_ZONE_SCAN = 65 #dead zone pour centrer la porte pendant le balleyage 
