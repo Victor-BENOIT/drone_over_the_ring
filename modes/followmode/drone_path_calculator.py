@@ -1,10 +1,7 @@
 import re
 from djitellopy import Tello
 import math
-
-LOG_PATH = "modes/followmode/log_test_curve.txt"
-DRONE_ACTIVATED = False
-AVERAGE_STRATING_HEIGHT = 110
+from followmode_settings import LOG_PATH, DRONE_ACTIVATED, AVERAGE_STRATING_HEIGHT, CROSS_DISTANCE, GATE_DISTANCE
 
 class DronePathCalculator:
     def __init__(self, log_path):
@@ -62,7 +59,7 @@ class DronePathCalculator:
                     z -= value
 
     def calculer_distance(self, x1, y1, z1, x2, y2, z2):
-            return round(math.sqrt((x2 - x1)**2 + (y1 - y1)**2 + (z2 - z1)**2), 2)
+            return round(math.sqrt((x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2), 2)
 
     def afficher_coordonnees(self):
         """Affiche les coordonnées calculées."""
@@ -95,7 +92,7 @@ class DronePathCalculator:
             self.ajout_coordonnees_cartesiennes(
                 "straight line", 
                 axe="x", 
-                distance = 150)
+                distance = CROSS_DISTANCE)
             
             if gate_type == "hex":
                 self.angle += 90
@@ -187,7 +184,7 @@ class DronePathCalculator:
             coord_start = list(self.coord_cart[-1][1])[2]
         
         x, y, z = coord_start
-        distance_gate = 50
+        distance_gate = GATE_DISTANCE
 
         x += round(distance_gate * math.cos(math.radians(self.angle)))
         y += round(distance_gate * math.sin(math.radians(self.angle)))
@@ -219,15 +216,14 @@ class DronePathCalculator:
                 # 1. Déplacement vers le point du milieu
                 self.tello.curve_xyz_speed(x_middle, y_middle, z_middle, x_target, y_target, z_target, vitesse)
 
-                # 2. Avancer de 150
-                self.tello.move_forward(150)
+                # 2. Avancer de CROSS_DISTANCE
+                self.tello.move_forward(CROSS_DISTANCE)
 
                 # 3. Tourner à gauche ou à droite de 110° selon le type de porte
                 if gate_type == "hex":
                     self.tello.rotate_counter_clockwise(110)
                 elif gate_type == "hoop":
                     self.tello.rotate_clockwise(110)
-
 
 
     def run(self):

@@ -1,0 +1,11 @@
+up 90
+down 20
+forward 186
+down 20
+right 20
+forward 67
+down 20
+down 20
+down 20
+forward 40
+GATE_IN_FRONT hoop

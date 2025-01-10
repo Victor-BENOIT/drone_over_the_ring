@@ -113,9 +113,9 @@ class Movement:
         self.tello.move_forward(distance + MOVE_CROSS_GATE)
         self.logging.add_movement('forward', distance + MOVE_CROSS_GATE)
         if type == "hoop":
-            self.rotate_clockwise(110)
+            self.rotate_clockwise(100)
         elif type == "hex":
-            self.rotate_counter_clockwise(110)
+            self.rotate_counter_clockwise(100)
 
         self.controller.mode.locked_vertical = False
         self.controller.mode.locked_horizontal = False

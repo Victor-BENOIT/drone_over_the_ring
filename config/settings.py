@@ -1,9 +1,9 @@
 #################################################################################################################
 #                                       Paramètres de chemin d'accès
 #################################################################################################################
-CHEMIN_DETECT = "drone_over_the_ring/resources/detect_profil.xml"  # Chemin d'accès au fichier de détection de visage
-MODEL_HOOP_PATH = r'drone_over_the_ring\resources\runs\detect\train9\weights\last.pt' # Chemin d'accès au modèle Hoop
-MODEL_HEX_PATH = r'drone_over_the_ring\resources\runs\detect\train5\weights\last.pt' # Chemin d'accès au modèle Hex
+CHEMIN_DETECT = "resources/detect_profil.xml"  # Chemin d'accès au fichier de détection de visage
+MODEL_HOOP_PATH = r'resources\runs\detect\train9\weights\last.pt' # Chemin d'accès au modèle Hoop
+MODEL_HEX_PATH = r'resources\runs\detect\train5\weights\last.pt' # Chemin d'accès au modèle Hex
 
 #################################################################################################################
 #                                       Paramètres pour le calcul de distance
@@ -98,6 +98,6 @@ MOVE_RATIO = 0.6 # [0:1] Ratio de déplacement par rapport à la distance de la 
 DEAD_ZONE = 10 # Zone morte pour le déplacement en cm
 
 
-MAX_GATES_PASSED = 1 # Nombre de portes à passer
+MAX_GATES_PASSED = 3 # Nombre de portes à passer
 
-DEAD_ZONE_SCAN = 65 #dead zoen pour centrer la porte pendant le balleyage 
+DEAD_ZONE_SCAN = 65 #dead zone pour centrer la porte pendant le balleyage 
