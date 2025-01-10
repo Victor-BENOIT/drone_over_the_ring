@@ -208,8 +208,8 @@ class AutonomousMode:
         # Ajout de la logique pour calculer l'angle de la porte
         ratio = w / h
         max_angle = 90  # Définir l'angle maximum possible
-        move_side_dist = 50
-        angle_side_value = 20
+        move_side_dist = 25
+        angle_side_value = 10
         angle_porte = round(max(0, min(max_angle, (1 - ratio) * max_angle)) * 2, 2)
 
         self.last_angles.append(angle_porte)
@@ -236,19 +236,20 @@ class AutonomousMode:
                     self.controller.movement.rotate_counter_clockwise(angle_side_value)
                     # print("Rotation: -10°")
                     self.controller.movement.move_right(move_side_dist)
+                    self.up_maneuver = False
             else:
                 self.controller.movement.rotate_clockwise(angle_side_value)
                 # print("Rotation: 10°")
                 self.controller.movement.move_left(move_side_dist)
                 # print("Déplacement gauche: 24cm")
 
-            # Boucle pour rotation et déplacement
-            if angle_porte != 0:
-                self.controller.movement.rotate_clockwise(angle_side_value)
-                # print("Rotation: 10°")
+            ## Boucle pour rotation et déplacement
+            # if angle_porte != 0:
+            #     self.controller.movement.rotate_clockwise(angle_side_value)
+            #     # print("Rotation: 10°")
 
-                self.controller.movement.move_left(move_side_dist)
-                # print("Déplacement gauche: 24cm")
+            #     self.controller.movement.move_left(move_side_dist)
+            #     # print("Déplacement gauche: 24cm")
 
 
 
@@ -388,7 +389,7 @@ class ScanMode:
 
     def main_loop(self):
         """
-        Exécute la boucle principale pour le scan à 360 degrés.
+        Exécute la boucle principale pour le scan à 180 degrés.
 
         Cette méthode est conçue pour être appelée régulièrement pour faire progresser le scan.
         À chaque incrément de rotation (par défaut 10 degrés), elle tente de détecter une porte.
@@ -405,7 +406,7 @@ class ScanMode:
             self.angle += self.increment
             self.detect_door()
         else:
-            print("Rotation à 360 degrés terminée")
+            print("Rotation à 180 degrés terminée")
             self.stop()
 
     def stop(self):
@@ -418,13 +419,40 @@ class ScanMode:
         if self.controller.is_flying():
             self.controller.land()
     
+    # def save_detected_doors(self):
+    #     """
+    #     Sauvegarde la liste des portes détectées dans un fichier texte.
+
+    #     Le fichier est nommé 'detected_doors.txt' et est généré dans le répertoire 'scan_M'.
+    #     """
+    #     import os  # Import du module os pour gérer les répertoires et les chemins
+        
+    #     # Définir le chemin du fichier
+    #     directory = "drone_over_the_ring/scan_M"
+    #     filename = "detected_doors.txt"
+    #     full_path = os.path.join(directory, filename)
+
+    #     # Vérifier si le répertoire existe, sinon le créer
+    #     if not os.path.exists(directory):
+    #         os.makedirs(directory)
+
+    #     try:
+    #         # Écrire les données dans le fichier
+    #         with open(full_path, "w") as file:
+    #             for door in self.detected_doors_list:
+    #                 file.write(f"{door}\n")
+    #         print(f"Les portes détectées ont été sauvegardées dans '{full_path}'.")
+    #     except Exception as e:
+    #         print(f"Erreur lors de la sauvegarde des portes détectées: {e}")
+
+    
     def save_detected_doors(self):
         """
         Sauvegarde la liste des portes détectées dans un fichier texte.
 
         Le fichier est nommé 'detected_doors.txt' et est généré dans le répertoire courant.
         """
-        filename = "detected_doors.txt"
+        filename = "detectedn_doors.txt"
         try:
             with open(filename, "w") as file:
                 for door in self.detected_doors_list:
@@ -432,6 +460,11 @@ class ScanMode:
             print(f"Les portes détectées ont été sauvegardées dans '{filename}'.")
         except Exception as e:
             print(f"Erreur lors de la sauvegarde des portes détectées: {e}")
+    
+    
+
+
+
 
 
 

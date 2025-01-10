@@ -2,12 +2,11 @@ import pygame
 import random
 import math
 
-# Initialisation de Pygame
-pygame.init()
-
 # Constantes
-LARGEUR = 1000
-HAUTEUR = 833
+LARGEUR = 900
+HAUTEUR = 815
+TAILLE_CADRILLAGE = 100
+
 BLANC = (255, 255, 255)
 BLEU = (0, 0, 255)
 ROUGE = (255, 0, 0)
@@ -26,35 +25,43 @@ MAX_TENTATIVES = 100
 DISTANCE_POST_TRAVERSEE = 1
 ANGLE_ROTATION = math.pi / 12  # 15 degrés pour la rotation d'évitement
 
-# Création de la fenêtre
+# Initialisation de Pygame
+pygame.init()
 ecran = pygame.display.set_mode((LARGEUR, HAUTEUR))
 pygame.display.set_caption("Traversée des Portes")
 
 class Porte:
-    def __init__(self, couleur, x1=None, y1=None, angle=None, portes_existantes=None):
+    def __init__(self, couleur, x_centre=None, y_centre=None, angle=None, x1_trait=None, y1_trait=None, x2_trait=None, y2_trait=None, portes_existantes=None):
         self.couleur = couleur
         self.traversee = False
         self.active = True
 
-        # Si les coordonnées et l'angle sont fournis, utilisez-les
-        if x1 is not None and y1 is not None and angle is not None:
-            self.x1 = x1  # Centre de la porte
-            self.y1 = y1
-            self.centre_x = self.x1  # Alias pour compatibilité
-            self.centre_y = self.y1  # Alias pour compatibilité
+        # Si les coordonnées et l'angle sont fournis
+        if x_centre is not None and y_centre is not None and angle is not None:
+            self.x_centre = x_centre  # Centre de la porte
+            self.y_centre = y_centre
+            self.centre_x = self.x_centre  # Alias pour compatibilité
+            self.centre_y = self.y_centre  # Alias pour compatibilité
             self.angle = angle
             
-            # Calcul des extrémités en fonction du centre
+            # Calcul des extrémités en fonction du centre, si les traits ne sont pas explicitement fournis
             demi_longueur = LONGUEUR_PORTE / 2
             self.dx = math.cos(self.angle)
             self.dy = math.sin(self.angle)
-            
-            # Calcul des extrémités
-            self.x2 = self.x1 + demi_longueur * self.dx
-            self.y2 = self.y1 + demi_longueur * self.dy
-            self.x3 = self.x1 - demi_longueur * self.dx
-            self.y3 = self.y1 - demi_longueur * self.dy
-            
+
+            if x1_trait is not None and y1_trait is not None and x2_trait is not None and y2_trait is not None:
+                # Utiliser les coordonnées de traits fournies
+                self.x1_trait = x1_trait
+                self.y1_trait = y1_trait
+                self.x2_trait = x2_trait
+                self.y2_trait = y2_trait
+            else:
+                # Calculer les traits à partir du centre et de l'angle
+                self.x1_trait = self.x1 - demi_longueur * self.dx
+                self.y1_trait = self.y1 - demi_longueur * self.dy
+                self.x2_trait = self.x1 + demi_longueur * self.dx
+                self.y2_trait = self.y1 + demi_longueur * self.dy
+
             # La normale pour les collisions (orthogonale à la direction de la porte)
             self.normal_x = -self.dy
             self.normal_y = self.dx
@@ -81,38 +88,31 @@ class Porte:
                 return True
         return False
 
-    def placer_aleatoirement(self, portes_existantes):
-        for _ in range(MAX_TENTATIVES):
-            self.x1 = random.randint(RAYON_ZONE, LARGEUR - RAYON_ZONE)
-            self.y1 = random.randint(RAYON_ZONE, HAUTEUR - RAYON_ZONE)
-            self.angle = random.uniform(0, 2 * math.pi)
-            
-            self.x2 = self.x1 + LONGUEUR_PORTE * math.cos(self.angle)
-            self.y2 = self.y1 + LONGUEUR_PORTE * math.sin(self.angle)
-            
-            self.centre_x = (self.x1 + self.x2) / 2
-            self.centre_y = (self.y1 + self.y2) / 2
-            
-            if (RAYON_ZONE <= self.centre_x <= LARGEUR - RAYON_ZONE and 
-                RAYON_ZONE <= self.centre_y <= HAUTEUR - RAYON_ZONE):
-                
-                self.dx = math.cos(self.angle)
-                self.dy = math.sin(self.angle)
-                self.normal_x = -self.dy
-                self.normal_y = self.dx
-                
-                if not self.chevauche_autres_portes(portes_existantes):
-                    return True
-        return False
-
     def calculer_points_entree_sortie(self):
+        # Calcul du vecteur directeur du trait
+        dx_trait = self.x2_trait - self.x1_trait
+        dy_trait = self.y2_trait - self.y1_trait
+
+        # Normalisation du vecteur pour obtenir la direction
+        longueur = math.sqrt(dx_trait**2 + dy_trait**2)
+        if longueur == 0:  # Eviter la division par zéro
+            return
+
+        dx_trait /= longueur
+        dy_trait /= longueur
+
+        # Calcul de la normale (perpendiculaire)
+        normal_x = -dy_trait
+        normal_y = dx_trait
+
+        # Points d'entrée et de sortie (déplacement selon la normale)
         self.pointA = (
-            self.centre_x + RAYON_ZONE * self.normal_x,
-            self.centre_y + RAYON_ZONE * self.normal_y
+            self.centre_x + RAYON_ZONE * normal_x,
+            self.centre_y + RAYON_ZONE * normal_y
         )
         self.pointB = (
-            self.centre_x - RAYON_ZONE * self.normal_x,
-            self.centre_y - RAYON_ZONE * self.normal_y
+            self.centre_x - RAYON_ZONE * normal_x,
+            self.centre_y - RAYON_ZONE * normal_y
         )
 
     def dessiner(self):
@@ -128,7 +128,7 @@ class Porte:
         
         # Dessiner la ligne de la porte
         epaisseur = 3 if self.active else 1
-        pygame.draw.line(ecran, self.couleur, (self.x2, self.y2), (self.x3, self.y3), epaisseur)
+        pygame.draw.line(ecran, self.couleur, (self.x1_trait, self.y1_trait), (self.x2_trait, self.y2_trait), epaisseur)
         
         # Dessiner les points A et B
         pygame.draw.circle(ecran, NOIR, (int(self.pointA[0]), int(self.pointA[1])), 5)
@@ -140,13 +140,14 @@ class Porte:
         text_b = font.render("B", True, ROUGE)
         ecran.blit(text_a, (int(self.pointA[0]) - 8, int(self.pointA[1]) - 12))
         ecran.blit(text_b, (int(self.pointB[0]) - 8, int(self.pointB[1]) - 12))
+            
 
     def distance_au_point(self, x, y):
         return math.sqrt((x - self.centre_x)**2 + (y - self.centre_y)**2)
 
 class Cercle:
     def __init__(self, portes):
-        self.x = 500
+        self.x = 450
         self.y = 33
         self.trace = [(self.x, self.y)]
         self.portes_traversees = 0
@@ -164,6 +165,7 @@ class Cercle:
         self.derniere_position = (self.x, self.y)
         self.temps_immobile = 0
         self.distance_totale = 0  # Nouvelle variable pour stocker la distance totale
+
 
     def calculer_distance_trace(self):
         """Calcule la distance totale parcourue en suivant la trace"""
@@ -614,8 +616,7 @@ class Cercle:
         distance_a_parcourir = min(vitesse, self.direction_post_traversee['distance_restante'])
         
         self.x += self.direction_post_traversee['dx'] * distance_a_parcourir
-        self.y += self.direction_post_traversee['dy'] * distance_a_parcourir
-        
+        self.y += self.direction_post_traversee['dy'] * distance_a_parcourir   
         self.direction_post_traversee['distance_restante'] -= distance_a_parcourir
         
         self.mettre_a_jour_trace((int(self.x), int(self.y)))  # Mettre à jour la trace
@@ -634,52 +635,133 @@ class Cercle:
         
         # Afficher le compteur de distance
         font = pygame.font.Font(None, 28)
+        
         distance_text = f"Distance: {int(self.distance_totale)} pixels"
+        position = f"Position x : {int(self.x)}, Position y : {int(self.y)}"
+        
         text_surface = font.render(distance_text, True, NOIR)
-        ecran.blit(text_surface, (10, 10))
-
-# Création des portes manuellement
-portes = [
-    Porte(BLEU, x1=714, y1=179, angle=0.0),
-    Porte(ROUGE, x1=510, y1=302, angle=0.0),
-]
-
-# Vérifiez si toutes les portes sont placées avec succès
-for porte in portes:
-    if not porte.placement_reussi:
-        print("Impossible de placer une porte manuellement.")
-        pygame.quit()
-        exit()
-
-# Création du cercle avec la position initiale à 500,33
-cercle = Cercle(portes)
-
-# Boucle principale (inchangée)
-en_cours = True
-horloge = pygame.time.Clock()
-
-while en_cours:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            en_cours = False
-
-    if cercle.en_traversee:
-        if cercle.continuer_traversee():
-            cercle.portes_traversees += 1
-    elif cercle.en_mouvement_post_traversee:
-        cercle.continuer_mouvement_post_traversee()
-    else:
-        cercle.calculer_prochain_deplacement(portes)
-
-    # Maintenir le cercle dans les limites de l'écran
-    cercle.x = min(max(cercle.x, 0), LARGEUR)
-    cercle.y = min(max(cercle.y, 0), HAUTEUR)
-
-    # Dessiner
-    ecran.fill(BLANC)
-    for porte in portes:
-        porte.dessiner()
-    cercle.dessiner()
-    pygame.display.flip()
+        text_pos = font.render(position,True,NOIR)
+        
+        ecran.blit(text_surface, (580, 755))
+        ecran.blit(text_pos, (580,780))
     
-    horloge.tick(60)
+    # Affichage de l'angle du point de départ     
+    def dessiner_rapporteur(self, ecran, point_x, point_y, rayon_rapporteur):
+    
+        # Dessiner les lignes et les annotations pour les angles
+        for angle in range(0, 181, 10):
+            radian = math.radians(angle)
+            # Calculer les coordonnées de l'extrémité de la ligne
+            x_start = point_x + rayon_rapporteur * math.cos(radian)
+            y_start = point_y + rayon_rapporteur * math.sin(radian)
+            
+            # Dessiner la ligne
+            pygame.draw.line(ecran, (128, 128, 128), (point_x, point_y), (x_start, y_start), width=1)
+            
+            # Dessiner le texte pour les angles multiples de 30
+            if angle % 30 == 0:
+                font = pygame.font.Font(None, 20)  # Taille de police ajustée
+                texte_surface = font.render(str(angle), True, (0, 0, 0))  # Texte en noir
+                # Positionner le texte près de l'extrémité de la ligne
+                ecran.blit(texte_surface, (x_start - 10, y_start - 10))
+                
+        # Dessiner le point de départ
+        pygame.draw.circle(ecran, ROUGE, (point_x, point_y), 7, 0)
+
+    
+class Parcours:
+    def __init__(self, fichier_portes):
+        # ecran = pygame.display.set_mode((LARGEUR, HAUTEUR))
+        self.horloge = pygame.time.Clock()
+        self.portes = charger_portes(fichier_portes)
+        self.cercle = Cercle(self.portes)
+        
+    # cadrillage de la fenêtre pygame 
+    def dessiner_cadrillage(self):
+
+        # Dessiner les lignes de la grille
+        for x in range(0, LARGEUR, TAILLE_CADRILLAGE):
+            pygame.draw.line(ecran, GRIS, (x, 0), (x, HAUTEUR), width=1)
+            # Ajouter les annotations sur l'axe X
+            font = pygame.font.Font(None, 24)
+            texte_surface = font.render(str(x), True, NOIR)
+            ecran.blit(texte_surface, (x + 5, 5))  # Légèrement décalé pour être lisible
+
+        for y in range(0, HAUTEUR, TAILLE_CADRILLAGE):
+            pygame.draw.line(ecran, GRIS, (0, y), (LARGEUR, y), width=1)
+            # Ajouter les annotations sur l'axe Y
+            font = pygame.font.Font(None, 24)
+            texte_surface = font.render(str(y), True, NOIR)
+            ecran.blit(texte_surface, (5, y + 5))  # Légèrement décalé pour être lisible
+
+        # Dessiner les axes principaux
+        pygame.draw.line(ecran, NOIR, (0, 0), (LARGEUR, 0), width=2)  # Axe horizontal haut
+        pygame.draw.line(ecran, NOIR, (0, 0), (0, HAUTEUR), width=2)  # Axe vertical gauche
+        
+    def boucle_principale(self):
+        en_cours = True
+        while en_cours:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    en_cours = False
+                    
+            ecran.fill(BLANC)
+
+            # Dessiner tout
+            self.dessiner_cadrillage()
+            
+            if self.cercle.en_traversee:
+                if self.cercle.continuer_traversee():
+                    self.cercle.portes_traversees += 1
+            elif self.cercle.en_mouvement_post_traversee:
+                self.cercle.continuer_mouvement_post_traversee()
+            else:
+                self.cercle.calculer_prochain_deplacement(self.portes)
+
+            # Maintenir le cercle dans les limites de l'écran
+            self.cercle.x = min(max(self.cercle.x, 0), LARGEUR)
+            self.cercle.y = min(max(self.cercle.y, 0), HAUTEUR)
+
+
+            for porte in self.portes:
+                porte.dessiner()
+            self.cercle.dessiner()
+            self.cercle.dessiner_rapporteur(ecran, 450, 33, 250)
+            pygame.display.flip()
+
+            # Mettre à jour l'affichage
+            pygame.display.flip()
+            self.horloge.tick(60)
+    
+
+# Fonction pour générer les portes à partir du fichier
+def charger_portes(fichier):
+    portes = []
+    with open(fichier, 'r') as f:
+        for ligne in f:
+            # Extraction des informations à partir de la ligne
+            donnees = {}
+            for param in ligne.split(','):
+                key, value = param.split('=')
+                donnees[key.strip()] = value.strip()
+
+            # Conversion des types des valeurs
+            couleur = eval(donnees['couleur'])  # Utilisation de eval pour obtenir la couleur
+            x_centre = float(donnees['x_centre'])
+            y_centre = float(donnees['y_centre'])
+            angle = float(donnees['angle'])
+            x1_trait = float(donnees['x1_trait'])
+            y1_trait = float(donnees['y1_trait'])
+            x2_trait = float(donnees['x2_trait'])
+            y2_trait = float(donnees['y2_trait'])
+
+            porte = Porte(couleur, x_centre, y_centre, angle, x1_trait, y1_trait, x2_trait, y2_trait)
+            portes.append(porte)
+    return portes
+            
+    
+if __name__ == "__main__":
+    ecran = pygame.display.set_mode((LARGEUR, HAUTEUR))
+    pygame.display.set_caption("Traversée des Portes")
+    parcours = Parcours("parcours.txt")
+    parcours.boucle_principale()

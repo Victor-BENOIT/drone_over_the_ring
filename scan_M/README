@@ -1,0 +1,53 @@
+# Projet DTOR
+
+## Description
+Fonctionnalité scan du drone; création d'une carte virtuel de l'emplacement des portes; algorithme du parcours le plus court
+
+### Exemples :
+- Ce projet est une application de surveillance de terrains stratégiques.
+- Il s'agit d'un outil interactif pour gérer des parcours visuels.
+
+---
+
+## Table des matières
+1. [Pré-requis](#pré-requis)
+2. [Installation](#installation)
+3. [Utilisation](#utilisation)
+4. [Fonctionnalités](#fonctionnalités)
+5. [Contribution](#contribution)
+6. [Support](#support)
+7. [Licence](#licence)
+
+---
+
+## Pré-requis
+
+- Python 3.10 ou supérieur
+- Pygame 2.0 ou supérieur
+- Tkinter 8.5 ou supérieur
+
+---
+
+## Utilisation
+
+- Télécharger le projet.
+- Installer les dépendances.
+- Assurer vous d'avoir l'ensemble des fichiers dans le répertoire de travail.
+- Lancer le script parcours_map.py.
+- Lorsque vous êtes satifait de l'emplacements des portes, clicker sur "file" en haut à droite de la fenêtre map_class et clicker sur "parcours" pour initer le parcours viruel du drone.
+
+---
+
+## Installation
+Installation du projet et ses dépendances.
+
+```bash
+# Cloner le dépôt
+git clone https://github.com/nom-utilisateur/nom-projet.git
+
+# Aller dans le répertoire du projet
+cd scan
+
+# Installer les dépendances
+pip install -r requirements.txt
+
