@@ -9,7 +9,8 @@ map.run()
 if map.parcours:
     map._map_quit()
     parcours.boucle_principale()
-    
+
+
 
 
 

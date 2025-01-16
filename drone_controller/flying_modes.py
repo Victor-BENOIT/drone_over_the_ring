@@ -354,7 +354,7 @@ class ScanMode:
         print("Mode Scan activé.")
         if not self.controller.is_flying():
             self.controller.takeoff()
-        while self.tello.get_height() < 120:
+        while self.tello.get_height() < 150:
             self.controller.movement.move_up(50)
 
     def detect_door(self):

@@ -1,0 +1,3 @@
+{'distance': 441, 'angle camera': 80.0, 'angle porte': 1.2162162162162238, 'porte': 'hoop'}
+{'distance': 429, 'angle camera': 112.0, 'angle porte': 0, 'porte': 'hex'}
+{'distance': 297, 'angle camera': 160.0, 'angle porte': 0, 'porte': 'hex'}
