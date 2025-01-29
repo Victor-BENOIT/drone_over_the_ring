@@ -7,7 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 from drone_path_calculator import DronePathCalculator
 from drone_connector import DroneConnector
-from followmode_settings import FULLSCREEN_ON, DRONE_ACTIVATED_UI, LOG_PATH, CROSS_DISTANCE
+from followmode_settings import FULLSCREEN_ON, DRONE_ACTIVATED_UI, LOG_PATH, CROSS_DISTANCE, ANGLE_ROTATION
 
 class DroneApp:
     def __init__(self, master):
@@ -277,13 +277,13 @@ class DroneApp:
 
             if gate_type == "hex":
                 if DRONE_ACTIVATED_UI:
-                    self.connector.drone.rotate_counter_clockwise(90)
+                    self.connector.drone.rotate_counter_clockwise(ANGLE_ROTATION)
                 if not DRONE_ACTIVATED_UI:
                     print("Rotation en cours : 90 ")
                     time.sleep(timer)
             elif gate_type == "hoop":
                 if DRONE_ACTIVATED_UI:
-                    self.connector.drone.rotate_clockwise(90)
+                    self.connector.drone.rotate_clockwise(ANGLE_ROTATION)
                 if not DRONE_ACTIVATED_UI:
                     print("Rotation en cours : -90 ")
                     time.sleep(timer)

@@ -1,8 +1,9 @@
 ## DRONE PATH CALCULATOR
 
-LOG_PATH = "modes/followmode/log_test_curve2.txt"
+LOG_PATH = "drone_over_the_ring/modes/followmode/log_oral_final_mod.txt"
 DRONE_ACTIVATED = False
-DRONE_ACTIVATED_UI = False
+DRONE_ACTIVATED_UI = True
+ANGLE_ROTATION = 100
 AVERAGE_STRATING_HEIGHT = 110
 FULLSCREEN_ON = False
 CROSS_DISTANCE = 200
